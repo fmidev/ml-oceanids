@@ -1,0 +1,97 @@
+# Training models to forecast several target parameters with gradient boosting for harbors in the OCEANIDS project
+
+## Harbors
+
+## Predictands
+
+## Predictors ERA5, ERA5D and seasonal forecast
+
+All available predictors listed in tables below, with those used in training bolded.
+
+### ERA5, ERA5D, and derived predictors
+
+| ML name |Predictor | Units | Producer | Spatial resolution |ML Temporal resolution |  Smartmet name |
+| :-- |:---|:-------------|:--|:-|:-|:-|
+|anor| Angle of sub-gridscale orography| |ERA5|0.25° x 0.25°|static (00 UTC)|ANOR-RAD|
+|z|Geopotential|m2 s-2  |ERA5|0.25° x 0.25°|static (00 UTC)|Z-M2S2|
+|lsm| Land sea mask  |1=land, 0=sea |ERA5|0.25° x 0.25°|static (00 UTC)|LC-0TO1|
+|sdor|Standard deviation of orography  |  |ERA5|0.25° x 0.25°|static (00 UTC)|SDOR-M|
+|slor| Slope of sub-gridscale orography |  |ERA5|0.25° x 0.25°|static (00 UTC)|SLOR|
+|tclw|Total column cloud liquid water |  |ERA5|0.25° x 0.25°|00 UTC|TCLW-KGM2|
+|tcwv|Total column water vapour |  |ERA5|0.25° x 0.25°|00 UTC|TOTCWV-KGM2|
+|swvl1|Volumetric soil water layer 1 (0-7cm) |  |ERA5|0.25° x 0.25°|00 UTC|SOILWET-M3M3|
+|swvl2|Volumetric soil water layer 2 (7-28cm) |  |ERA5|0.25° x 0.25°|00 UTC|SWVL2-M3M3|
+|swvl3|Volumetric soil water layer 3 (28-100cm) |  |ERA5|0.25° x 0.25°|00 UTC|SWVL3-M3M3|
+|swvl4| Volumetric soil water layer 4 (100-289cm)|  |ERA5|0.25° x 0.25°|00 UTC|SWVL4-M3M3|
+|ewss|Eastward turbulent surface stress|N m-2 s|ERA5D|0.25° x 0.25°|previous day 24h sums|EWSS-NM2S|
+|e|Evaporation|m of water equivalent|ERA5D|0.25° x 0.25°|previous day 24h sums|EVAP-M|
+|nsss|Northward turbulent surface stress|N m-2 s|ERA5D|0.25° x 0.25°|previous day 24h sums|NSSS-NM2S|
+|slhf|Surface latent heat flux|W m-2|ERA5D|0.25° x 0.25°|previous day 24h sums|FLLAT-JM2|
+|ssr|Surface net solar radiation|W m-2|ERA5D|0.25° x 0.25°|previous day 24h sums|RNETSWA-JM2|
+|str|Surface net thermal radiation|W m-2|ERA5D|0.25° x 0.25°|previous day 24h sums|RNETLWA-JM2|
+|sshf|Surface sensible heat flux|W m-2|ERA5D|0.25° x 0.25°|previous day 24h sums|FLSEN-JM2|
+|ssrd|Surface solar radiation downwards|W m-2|ERA5D|0.25° x 0.25°|previous day 24h sums|RADGLOA-JM2|
+|strd|Surface thermal radiation downwards|W m-2|ERA5D|0.25° x 0.25°|previous day 24h sums|RADLWA-JM2|
+|tp|Total precipitation|m|ERA5D|0.25° x 0.25°|previous day 24h sums|RR-M|
+|ttr|Top net thermal radiation||ERA5D|0.25° x 0.25°|previous day 24h sums|RTOPLWA-JM2|
+|fg10| 10m wind gust since previous post-processing  | m s-1 |ERA5D|0.25° x 0.25°|previous day 24h maximum value|FFG-MS|
+|mx2t| Maximum 2m temperature since previous post-processing | K |ERA5D|0.25° x 0.25°|previous day 24h maximum value|TMAX-K|
+|mn2t|Minimum 2m temperature since previous post-processing | K |ERA5D|0.25° x 0.25°|previous day 24h minimum value|TMIN-K|
+|u10-00, u10-12| 10m u-component of wind | m s-1 |ERA5|0.25° x 0.25°|00 and 12 UTC|U10-MS|
+|v10-00, v10-12| 10m v-component of wind | m s-1 |ERA5|0.25° x 0.25°|00 and 12 UTC|V10-MS|
+|td2-00, td2-12|2m dewpoint temperature|K|ERA5|0.25° x 0.25°|00 and 12 UTC|TD2-K|
+|t2-00, t2-12| 2m temperature|K|ERA5|0.25° x 0.25°|00 and 12 UTC|T2-K|
+|msl-00, msl-12| Mean sea level pressure|Pa|ERA5|0.25° x 0.25°|00 and 12 UTC|PSEA-HPA|
+|tsea-00, tsea-12| Sea surface temperature|K|ERA5|0.25° x 0.25°|00 and 12 UTC|TSEA-K|
+|tcc-00, tcc-12|Total cloud cover|0 to 1|ERA5|0.25° x 0.25°|00 and 12 UTC|N-0TO1|
+|kx-00, kx-12|K index||ERA5|0.25° x 0.25°|00 and 12 UTC|KX|
+|t850-00, t850-12|Temperature at 850 hPa|K|ERA5|0.25° x 0.25°|00 and 12 UTC|T-K|
+|t700-00, t700-12|Temperature at 700 hPa|K|ERA5|0.25° x 0.25°|00 and 12 UTC|T-K|
+|t500-00, t500-12|Temperature at 500 hPa|K|ERA5|0.25° x 0.25°|00 and 12 UTC|T-K|
+|q850-00, q850-12|Specific humidity at 850 hPa|kg kg-1|ERA5|0.25° x 0.25°|00 and 12 UTC|Q-KGKG|
+|q700-00, q700-12|Specific humidity at 700 hPa|kg kg-1|ERA5|0.25° x 0.25°|00 and 12 UTC|Q-KGKG|
+|q500-00, q500-12|Specific humidity at 500 hPa|kg kg-1|ERA5|0.25° x 0.25°|00 and 12 UTC|Q-KGKG|
+|u850-00, u850-12|U-component of wind at 850 hPa|m s-1|ERA5|0.25° x 0.25°|00 and 12 UTC|U-MS|
+|u700-00, u700-12|U-component of wind at 700 hPa|m s-1|ERA5|0.25° x 0.25°|00 and 12 UTC|U-MS|
+|u500-00, u500-12|U-component of wind at 500 hPa|m s-1|ERA5|0.25° x 0.25°|00 and 12 UTC|U-MS|
+|v850-00, v850-12|V-component of wind at 850 hPa|m s-1|ERA5|0.25° x 0.25°|00 and 12 UTC|V-MS|
+|v700-00, v700-12|V-component of wind at 700 hPa|m s-1|ERA5|0.25° x 0.25°|00 and 12 UTC|V-MS|
+|v500-00, v500-12|V-component of wind at 500 hPa|m s-1|ERA5|0.25° x 0.25°|00 and 12 UTC|V-MS|
+|z850-00, z850-12|Geopotential at 850 hPa|m2 s-2|ERA5|0.25° x 0.25°|00 and 12 UTC|Z-M2S2|
+|z700-00, z700-12|Geopotential at 700 hPa|m2 s-2|ERA5|0.25° x 0.25°|00 and 12 UTC|Z-M2S2|
+|z500-00, z500-12|Geopotential at 500 hPa|m2 s-2|ERA5|0.25° x 0.25°|00 and 12 UTC|Z-M2S2|
+
+### Seasonal forecast and derived predictors 
+
+| Predictor | Units | Producer | Spatial resolution | ML Temporal resolution (available SF resolution) | ML name |
+| :------------- |:---|:-------------| :--|:-|:-|
+| 10m u-component of wind | m/s |||00 UTC (6h instantaneous)|u10|
+| 10m v-component of wind | m/s |||00 UTC 6h instantaneous|v10|
+| 10m wind gust since previous post-processing  | m/s |||previous day maximum value (24h aggregation)|fg10|
+|2m dewpoint temperature|K|||00 UTC (6h instantaneous)|td2|
+|2m temperature|K|||00 UTC (6h instantaneous)|t2|
+|Eastward turbulent surface stress|N m-2 s|||previous day 24h sums (24h aggregation since beginning of forecast)|ewss|
+|Evaporation|m of water equivalent|||previous day 24h sums (24h aggregation since beginning of forecast)|e|
+|Land-sea mask|-|||static|lsm|
+|Mean sea level pressure|Pa|||00 UTC (6h instantaneous)|msl|
+|Northward turbulent surface stress|N m-2 s|||previous day 24h sums (24h aggregation since beginning of forecast)|nsss|
+|Sea surface temperature|K|||00 UTC (6h instantaneous)|tsea|
+|Surface latent heat flux|W m-2|||previous day 24h sums (24h aggregation since beginning of forecast)|slhf|
+|Surface net solar radiation|W m-2|||previous day 24h sums (24h aggregation since beginning of forecast)|ssr|
+|Surface net thermal radiation|W m-2|||previous day 24h sums (24h aggregation since beginning of forecast)|str|
+|Surface sensible heat flux|W m-2|||previous day 24h sums (24h aggregation since beginning of forecast)|sshf|
+|Surface solar radiation downwards|W m-2|||previous day 24h sums (24h aggregation since beginning of forecast)|ssrd|
+|Surface thermal radiation downwards|W m-2|||previous day 24h sums (24h aggregation since beginning of forecast)|strd|
+|Total cloud cover|0 to 1|||00 UTC (6h instantaneous)|tcc|
+|Total column cloud liquid water|kg m-2|||00 UTC (24h instantaneous)|tlwc|
+|Total precipitation|m|||previous day 24h sums (24h aggregation since beginning of forecast)|tp|
+
+## System requirements
+
+## Dependencies
+
+## Downloading the predictors and predictand data
+
+## Training the model
+
+## Predicting target parameters
