@@ -2,6 +2,10 @@
 
 ## Harbors
 
+|harbor|latitude|longitude|lat-1|lon-1|lat-1|lon-1|lat-1|lon-1|lat-1|lon-1|
+|:-|:-|:-|:-|:-|:-|:-|:-|:-|:-|:-|
+|FMISID|||
+
 ## Predictands
 
 ## Predictors ERA5, ERA5D and seasonal forecast
