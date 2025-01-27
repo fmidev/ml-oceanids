@@ -1,10 +1,11 @@
 # Training models to forecast several target parameters with gradient boosting for harbors in the OCEANIDS project
 
-## Harbors
+## Training locations
 
-|harbor|latitude|longitude|lat-1|lon-1|lat-1|lon-1|lat-1|lon-1|lat-1|lon-1|
-|:-|:-|:-|:-|:-|:-|:-|:-|:-|:-|:-|
-|FMISID|||
+To train an XGBoost model, observational data is required as the target parameter (predictand) in fitting, such as wind gust, temperature or precipitation. We use ERA5 reanalysis data and derived features as predictors, or input variables. Time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API.
+
+![Training locations](Raahe-101785.jpg)
+Figure 1 Example: Training locations 1 to 4, along with the Raahe observation site (red).
 
 ## Predictands
 
@@ -91,8 +92,22 @@ All available predictors listed in tables below, with those used in training bol
 |Total precipitation|m|||previous day 24h sums (24h aggregation since beginning of forecast)|tp|
 
 ## System requirements
+Python version 3.12.7 in the UNIX/Linux environment was used in this project.
+
+The time it takes to run the model training dependes f.ex. on the number of locations, number of predictors, selected hyperparameters, etc. For 4 locations, XX predictors and hyperparameters used, it took approximately XX hours to train the model, with 64 CPU cores and 228G memory. With the fitted model, predicting target parameter from seasonal forecast data takes around XX hours with a similar setup.
 
 ## Dependencies
+To create xgb2 environment used in this project, check out the `xgb2.yml` file.
+
+To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to. You will need to register for an ECMWF account to download data from CDS.
+
+Instructions for Optuna and Optuna Dashboard at https://optuna.org.
+
+For each step it is adviced to use the Linux screen, downloading the data and running the model training/prediction takes time.
+
+The Climate Data Operator (CDO) software is used in predicting the target parameters for handling the input/output grib files https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-30001.1.
+
+We use the GNU parallel: Tange, O., 2018. GNU Parallel 2018. Available at: https://doi.org/10.5281/zenodo.1146014
 
 ## Downloading the predictors and predictand data
 
