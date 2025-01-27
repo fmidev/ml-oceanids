@@ -1,20 +1,22 @@
 # Training models to forecast several target parameters with gradient boosting for harbors in the OCEANIDS project
 
+The code presented here reproduces the data and model training and prediction workflows used in the OCEANIDS project to predict several target parameters for selected locations. The models are trained with ERA5 reanalysis data while seasonal forecasts are used in prediction.
+
 ## Training locations
 
-To train an XGBoost model, observational data is required as the target parameter (predictand) in fitting, such as wind gust, temperature or precipitation. We use ERA5 reanalysis data and derived features as predictors, or input variables. Time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API.
+To train an XGBoost model, observational data is required as the predictand (target parameter) in fitting, such as wind gust, temperature or precipitation. We use ERA5 reanalysis data and derived features as predictors (input variables): time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API.
 
 ![Training locations](Raahe-101785.jpg)
 Figure 1 Example: Training locations 1 to 4, along with the Raahe observation site (red).
 
 ## Predictands
 
-|Predictand|Data|ML name|Units|Description|
+|Predictand|ML name|Data|Units|Description|
 |:-|:-|:-|:-|:-|
-|Daily greatest wind gust speed|WG_PT1H_MAX|WG_PT24H_MAX|m s-1|Previous day 24h maximum value from 1 hour greatest wind gust speed|
-|||TP_PT24H_SUM|||
-|||TX_PT24H_MAX|||
-|||TN_PT24H_MIN|||
+|Daily greatest wind gust speed|WG_PT24H_MAX|WG_PT1H_MAX|m s-1|Previous day 24h maximum value from 1 hour greatest wind gust speed|
+||TP_PT24H_SUM||||
+||TX_PT24H_MAX||||
+||TN_PT24H_MIN||||
 
 ## Predictors ERA5, ERA5D and seasonal forecast
 
@@ -117,6 +119,20 @@ The Climate Data Operator (CDO) software is used in predicting the target parame
 We use the GNU parallel: Tange, O., 2018. GNU Parallel 2018. Available at: https://doi.org/10.5281/zenodo.1146014
 
 ## Downloading the predictors and predictand data
+For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end times. Output is a csv file for each parameter. Check the directory structures defined in the scripts.
+
+To download the predictand data, run the `ts-obs-oceanids.py`. The resulting time series are saved as a csv file.
+
+To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files.
+
+To combine all predictor CSV files into a single training data input file, run the script `join-training-data.sh.`
+
+To get the ERA5/ERA5D derived or other additional predictors, run `.py`.
+
+`calc-clim-oceanids.py`
+
+To plot the location and four nearest grid points on map, run `.py`. 
+
 
 ## Training the model
 
