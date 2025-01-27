@@ -112,7 +112,7 @@ To download the seasonal forecast data etc from the Climate Data Store, the CDS 
 
 Instructions for Optuna and Optuna Dashboard at https://optuna.org.
 
-For each step it is adviced to use the Linux screen, downloading the data and running the model training/prediction takes time.
+For each step it is adviced to use the GNU Screen, downloading the data and running the model training/prediction takes time.
 
 The Climate Data Operator (CDO) software is used in predicting the target parameters for handling the input/output grib files https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-30001.1.
 
