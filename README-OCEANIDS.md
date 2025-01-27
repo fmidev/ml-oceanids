@@ -9,6 +9,13 @@ Figure 1 Example: Training locations 1 to 4, along with the Raahe observation si
 
 ## Predictands
 
+|Predictand|Data|ML name|Units|Description|
+||:-|:-|:-|:-|
+|Daily greatest wind gust speed|WG_PT1H_MAX|WG_PT24H_MAX|m s-1|Previous day 24h maximum value from 1 hour greatest wind gust speed|
+||TP_PT24H_SUM|||
+||TX_PT24H_MAX|||
+||TN_PT24H_MIN|||
+
 ## Predictors ERA5, ERA5D and seasonal forecast
 
 All available predictors listed in tables below, with those used in training bolded.
