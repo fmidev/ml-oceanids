@@ -22,17 +22,17 @@ We use the GNU parallel: Tange, O., 2018. GNU Parallel 2018. Available at: https
 
 ## Downloading the predictors and predictand data
 
-To train an XGBoost model, observational data is required as the predictand (target parameter) in fitting, such as wind gust, temperature or precipitation. We use ERA5 reanalysis data and derived features as predictors (input variables): time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API.
+To train an XGBoost model, observational data is required as the predictand (target parameter) in fitting, such as wind gust, temperature or precipitation. We use ERA5 reanalysis data and derived features as predictors (input variables): time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API. Details of all the predictands and predictors available are provided in Tables 1, 2, and 3 at the end of this file.
 
 For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end times. Output is a csv file for each parameter. Check the directory structures defined in the scripts.
 
-To download the predictand data, run the `ts-obs-oceanids.py`. The resulting time series are saved as a csv file.
+You need to download the predictand data aka the observations for your selected location and save them in a csv. Description of table structure here. We run the `ts-obs-oceanids.py` script to ts query observations but this needs fmi-apikey which is not shared outside organisation. 
 
 To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files.
 
 To combine all predictor CSV files into a single training data input file, run the script `join-training-data.sh.`
 
-To get the ERA5/ERA5D derived or other additional predictors, run `.py`.
+To get the ERA5/ERA5D derived or other additional predictors, run `add-predictors-oceanids.py`.
 
 `calc-clim-oceanids.py`
 
@@ -56,9 +56,11 @@ Figure 1 Example: Training locations 1 to 4, along with the Raahe observation si
 ||TX_PT24H_MAX||||
 ||TN_PT24H_MIN||||
 
+Table 1 Predictands used in this project.
+
 ## Predictors ERA5, ERA5D and seasonal forecast
 
-All available predictors listed in tables below, with those used in training bolded.
+All available predictors listed in Tables 2 (training the model) and 3 (predicting target parametes), with those used in training bolded.
 
 ### ERA5, ERA5D, and derived predictors
 
@@ -113,6 +115,7 @@ All available predictors listed in tables below, with those used in training bol
 |z700-00, z700-12|Geopotential at 700 hPa|m2 s-2|ERA5|0.25° x 0.25°|00 and 12 UTC|Z-M2S2|
 |z500-00, z500-12|Geopotential at 500 hPa|m2 s-2|ERA5|0.25° x 0.25°|00 and 12 UTC|Z-M2S2|
 
+Table 2 ERA5/ERA5D and derived predictors for training the models.
 ### Seasonal forecast and derived predictors 
 
 | Predictor | Units | Producer | Spatial resolution | ML Temporal resolution (available SF resolution) | ML name |
@@ -138,3 +141,4 @@ All available predictors listed in tables below, with those used in training bol
 |Total column cloud liquid water|kg m-2|||00 UTC (24h instantaneous)|tlwc|
 |Total precipitation|m|||previous day 24h sums (24h aggregation since beginning of forecast)|tp|
 
+Table 3. Seasonal forecast and other predictors used in predicting target parameters. 
