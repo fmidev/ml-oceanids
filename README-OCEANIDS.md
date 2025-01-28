@@ -26,7 +26,7 @@ To train an XGBoost model, observational data is required as the predictand (tar
 
 For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end times. Output is a csv file for each parameter. Check the directory structures defined in the scripts.
 
-You need to download the predictand data aka the observations for your selected location and save them in a csv. Description of table structure here. We run the `ts-obs-oceanids.py` script to ts query observations but this needs fmi-apikey which is not shared outside organisation.
+You need to download the predictand data aka the observations for your selected location and save them in a csv. Anni will add Description of table structure here. We run the `ts-obs-oceanids.py` script to ts query observations for Finnish stations but this needs fmi-apikey which is not shared outside organisation.
 
 To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files.
 
