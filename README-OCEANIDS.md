@@ -26,7 +26,7 @@ To train an XGBoost model, observational data is required as the predictand (tar
 
 For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end times. Output is a csv file for each parameter. Check the directory structures defined in the scripts.
 
-You need to download the predictand data aka the observations for your selected location and save them in a csv. Description of table structure here. We run the `ts-obs-oceanids.py` script to ts query observations but this needs fmi-apikey which is not shared outside organisation. 
+You need to download the predictand data aka the observations for your selected location and save them in a csv. Description of table structure here. We run the `ts-obs-oceanids.py` script to ts query observations but this needs fmi-apikey which is not shared outside organisation.
 
 To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files.
 
@@ -41,11 +41,22 @@ To plot the location and four nearest grid points on map, run `.py`.
 ![Training locations](Raahe-101785.jpg)
 Figure 1 Example: Training locations 1 to 4, along with the Raahe observation site (red).
 
-
 ## Training the model
 
-## Predicting target parameters
+To perform the Optuna hyperparameter tuning (https://optuna.org/), run `xgb-fit-optuna-era5-oceanids.py`. Check the results on your Optuna Dashboard view.
 
+To train the model with tuned hyperparameters, run `xgb-fit-era5-oceanids.py`. The fitted model is saved as a json file and relevant information is written to a log file, including RMSE/MAE.
+
+To perform the K-Fold cross-validation (split input dataset to optimal training and testing sets by years), run `xgb-fit-KFold-era5-oceanids.py`.  
+
+<!--To create the cross-correlation matrix and correlation bar chart figures, run `cross-correlation-swi2.py`.-->
+
+To create the F-score (feature importance) figure, run `xgb-analysis-era5-oceanids.py`. This needs as input the trained model.
+
+## Predicting target parameters
+Scripts for predicting target parameters can be found from https://github.com/fmidev/harvesterseasons-smartmet/tree/destine/bin. Predicting target parameters requires first downloading the data and pre-processing as all input data must be re-gridded. `get-seasonal.sh` downloads (latest or user-specified start month+year) the seasonal forecast (https://cds.climate.copernicus.eu/cdsapp#!/dataset/seasonal-original-single-levels?tab=overview) and other necessary data for the European area. The script performs also statistical bias-adjusting and downscaling for several parameters. Preprocessing uses the GNU parallel and CDO.
+
+Predicting with the trained model happens with `run-xgb-predict-oceanids.sh`, and `xgb-predict-oceanids.py`, with input gribs remapped to ERA5 grid and selecting the four grid points used in training. The Python script uses Xarray to join different input grids into one data frame that includes all time steps for each input in the target grid. Then prediction for target parameter is made with XGBoost predict with the previously trained model. Ready csv file is then returned to the bash script that combines the results for all the 51 ensemble members to a single csv output file. 
 
 ## Predictands
 
