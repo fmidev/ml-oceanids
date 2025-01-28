@@ -2,12 +2,50 @@
 
 The code presented here reproduces the data and model training and prediction workflows used in the OCEANIDS project to predict several target parameters for selected locations. The models are trained with ERA5 reanalysis data while seasonal forecasts are used in prediction.
 
-## Training locations
+## System requirements
+Python version 3.12.7 in the UNIX/Linux environment was used in this project.
+
+The time it takes to run the model training dependes f.ex. on the number of locations, number of predictors, selected hyperparameters, etc. For 4 locations, XX predictors and hyperparameters used, it took approximately XX hours to train the model, with 64 CPU cores and 228G memory. With the fitted model, predicting target parameter from seasonal forecast data takes around XX hours with a similar setup.
+
+## Dependencies
+To create xgb2 environment used in this project, check out the `xgb2.yml` file.
+
+To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/how-to-api. You will need to register for an ECMWF account to download data from CDS.
+
+Instructions for Optuna and Optuna Dashboard at https://optuna.org.
+
+For each step it is adviced to use the GNU Screen, downloading the data and running the model training/prediction takes time.
+
+The Climate Data Operator (CDO) software is used in predicting the target parameters for handling the input/output grib files https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-30001.1.
+
+We use the GNU parallel: Tange, O., 2018. GNU Parallel 2018. Available at: https://doi.org/10.5281/zenodo.1146014
+
+## Downloading the predictors and predictand data
 
 To train an XGBoost model, observational data is required as the predictand (target parameter) in fitting, such as wind gust, temperature or precipitation. We use ERA5 reanalysis data and derived features as predictors (input variables): time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API.
 
+For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end times. Output is a csv file for each parameter. Check the directory structures defined in the scripts.
+
+To download the predictand data, run the `ts-obs-oceanids.py`. The resulting time series are saved as a csv file.
+
+To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files.
+
+To combine all predictor CSV files into a single training data input file, run the script `join-training-data.sh.`
+
+To get the ERA5/ERA5D derived or other additional predictors, run `.py`.
+
+`calc-clim-oceanids.py`
+
+To plot the location and four nearest grid points on map, run `.py`. 
+
 ![Training locations](Raahe-101785.jpg)
 Figure 1 Example: Training locations 1 to 4, along with the Raahe observation site (red).
+
+
+## Training the model
+
+## Predicting target parameters
+
 
 ## Predictands
 
@@ -100,40 +138,3 @@ All available predictors listed in tables below, with those used in training bol
 |Total column cloud liquid water|kg m-2|||00 UTC (24h instantaneous)|tlwc|
 |Total precipitation|m|||previous day 24h sums (24h aggregation since beginning of forecast)|tp|
 
-## System requirements
-Python version 3.12.7 in the UNIX/Linux environment was used in this project.
-
-The time it takes to run the model training dependes f.ex. on the number of locations, number of predictors, selected hyperparameters, etc. For 4 locations, XX predictors and hyperparameters used, it took approximately XX hours to train the model, with 64 CPU cores and 228G memory. With the fitted model, predicting target parameter from seasonal forecast data takes around XX hours with a similar setup.
-
-## Dependencies
-To create xgb2 environment used in this project, check out the `xgb2.yml` file.
-
-To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/how-to-api. You will need to register for an ECMWF account to download data from CDS.
-
-Instructions for Optuna and Optuna Dashboard at https://optuna.org.
-
-For each step it is adviced to use the GNU Screen, downloading the data and running the model training/prediction takes time.
-
-The Climate Data Operator (CDO) software is used in predicting the target parameters for handling the input/output grib files https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-30001.1.
-
-We use the GNU parallel: Tange, O., 2018. GNU Parallel 2018. Available at: https://doi.org/10.5281/zenodo.1146014
-
-## Downloading the predictors and predictand data
-For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end times. Output is a csv file for each parameter. Check the directory structures defined in the scripts.
-
-To download the predictand data, run the `ts-obs-oceanids.py`. The resulting time series are saved as a csv file.
-
-To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files.
-
-To combine all predictor CSV files into a single training data input file, run the script `join-training-data.sh.`
-
-To get the ERA5/ERA5D derived or other additional predictors, run `.py`.
-
-`calc-clim-oceanids.py`
-
-To plot the location and four nearest grid points on map, run `.py`. 
-
-
-## Training the model
-
-## Predicting target parameters
