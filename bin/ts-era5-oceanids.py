@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-import time, warnings,requests,json
+import time, warnings,requests,json,sys,os
 import pandas as pd
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-# SmarMet-server timeseries query to fetch ERA5 training data for ML
-# remember to: conda activate xgb 
+# SmarMet-server timeseries (ts) query to fetch ERA5/ERA5D training data for ML OCEANIDS
+# ts queries for four grid points around harbor location
+# remember to first: conda activate xgb2 and give harbor name as cmd
+# (AK 2025)
 
 startTime=time.time()
+
+harbor_name=sys.argv[1]
 
 def filter_points(df,lat,lon,nro,name):
     df0=df.copy()
@@ -17,85 +21,159 @@ def filter_points(df,lat,lon,nro,name):
     df0=df0.dropna()
     return df0
 
-data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/'
+def filter_dataframe(df,grid_points,name):
+    df_new=pd.DataFrame()
+    for i in range(1, 5):  # For lat1, lon1, ..., lat4, lon4
+        lat = grid_points[f"lat-{i}"]
+        lon = grid_points[f"lon-{i}"]
+        df_filtered = filter_points(df, lat, lon, i, name)
+        if df_new.empty:
+            df_new = df_filtered
+        else:
+            df_new = pd.concat([df_new,df_filtered],axis=1,sort=False)
+    df_new=df_new.reset_index()
+    return df_new
 
-predictors = [
-        {'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind
-        {'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind
-        {'fg10':'FFG-MS:ERA5:5021:1:0:1:0'}, # 10m wind gust since previous post-processing AINA EDELLINEN TUNTI HAE ERIKSEEN
-        ##{'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature
-        {'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature
-        ##{'ewss':'EWSS-NM2S:ERA5:5021:1:0:1:0'}, # eastward turbulent surface stress
-        ##{'e':'EVAP-M:ERA5:5021:1:0:1:0'}, # evaporation
-        #{'lsm':'LC-0TO1:ERA5:5021:1:0:1:0'}, # land-sea mask
-        ##{'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure
-        ##{'nsss':'NSSS-NM2S:ERA5:5021:1:0:1:0'}, # northward turbulent surface stress
-        ##{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature
-        ##{'slhf':'FLLAT-JM2:ERA5:5021:1:0:1:0'}, # surface latent heat flux
-        ##{'ssr':'RNETSWA-JM2:ERA5:5021:1:0:1:0'}, # surface net solar radiation
-        ##{'str':'RNETLWA-JM2:ERA5:5021:1:0:1:0'}, # surface net thermal radiation
-        ##{'sshf':'FLSEN-JM2:ERA5:5021:1:0:1:0'}, # surface sensible heat flux
-        ##{'ssrd':'RADGLOA-JM2:ERA5:5021:1:0:1:0'}, # surface solar radiation downwards
-        ##{'strd':'RADLWA-JM2:ERA5:5021:1:0:1:0'}, # surface thermal radiation downwards
-        ##{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover
-        ##{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water
-        {'tp':'RR-M:ERA5:5021:1:0:1:0'} # total precipitation
-]
+def get_bbox(lat, lon, buffer_degrees=0.25):
+    #Generate a bounding box around a given lat/lon point
+    min_lat = lat - buffer_degrees
+    max_lat = lat + buffer_degrees
+    min_lon = lon - buffer_degrees
+    max_lon = lon + buffer_degrees
+    return f'{min_lon},{min_lat},{max_lon},{max_lat}'
 
-source='desm.harvesterseasons.com:8080' # server for timeseries query
-#bbox='24.9459,60.45867,25.4459,59.95867' # Vuosaari harbor region, 4 grid points
-bbox='4.23222,36.41611,4.73222,36.91611' # Malaga port/airport region, 4 grid points
-#start='20130701T000000Z' # 2013-2023 period for ML fitting as observations (predictand) available 2013 onward
-#end='20231231T210000Z'
-start='20000101T000000Z'
-end='20230831T000000Z'
-tstep='3h'
-
-# Timeseries query
-for pred in predictors:
-    key,value=list(pred.items())[0]
-    name=key
-    print(key)
-    query='http://'+source+'/timeseries?bbox='+bbox+'&param=utctime,latitude,longitude,'+value+'&starttime='+start+'&endtime='+end+'&timestep='+tstep+'&format=json&precision=full&tz=utc&timeformat=sql'
+def ts_query(source,bbox,value,start,end,hour,name):
+    df=pd.DataFrame()
+    query=f'http://{source}/timeseries?bbox={bbox}&param=utctime,latitude,longitude,{value}&starttime={start}&endtime={end}&hour={hour}&format=json&precision=full&tz=utc&timeformat=sql'
     print(query)
     response=requests.get(url=query)
     results_json=json.loads(response.content)
-    #print(results_json)    
+    #print(results_json)
     for i in range(len(results_json)):
         res1=results_json[i]
         for key,val in res1.items():
             if key!='utctime':   
-                res1[key]=val.strip('[]').split()
+                res1[key]=str(val).strip('[]').split()
     df=pd.DataFrame(results_json)  
     df.columns=['utctime','latitude','longitude',name] # change headers      
     expl_cols=['latitude','longitude',name]
     df=df.explode(expl_cols)
-    print(df)
     df.set_index('utctime',inplace=True)
-    # filter points
-    lat='36.5000000000000000'
-    lon='4.25000000000000000'
-    df1=filter_points(df,lat,lon,1,name)
-    lat='36.7500000000000000'
-    lon='4.2500000000000000'
-    df2=filter_points(df,lat,lon,2,name)
-    lat='36.7500000000000000'
-    lon='4.500000000000000'
-    df3=filter_points(df,lat,lon,3,name)
-    lat='36.500000000000000'
-    lon='4.500000000000000'
-    df4=filter_points(df,lat,lon,4,name)
-    # merge dataframes
-    df_new = pd.concat([df1,df2,df3,df4],axis=1,sort=False).reset_index()
-    # save to csv file
-    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-all-check.csv',index=False) 
-    df_new = df_new.drop(['utctime', 'lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4'], axis=1)
-    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-all-use.csv',index=False) 
+    return(df)
+
+# Load harbor config file
+with open('harbors_config.json', 'r') as file:
+    config = json.load(file)
+
+# Access info for a specific harbor
+harbor = config.get(harbor_name, {})
+latitude = harbor.get('latitude')
+longitude = harbor.get('longitude')
+start = harbor.get('start')
+end=harbor.get('end')
+
+bbox = get_bbox(latitude, longitude, buffer_degrees=0.25)
+
+print(f'ERA5 Timeseries queries for {harbor_name}')
+
+data_dir=f'/home/ubuntu/data/ML/training-data/OCEANIDS/{harbor_name}/'
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
     
-    # save utctime, lat/lon info to csv file (run once with u10, then comment out)
-    #df_new = df_new.drop(['u10-1', 'u10-2','u10-3','u10-4'], axis=1)
-    #print(df_new)
-    #df_new.to_csv(data_dir+'era5-oceanids-utctime-lat-lon-'+start+'-'+end+'-all.csv',index=False) 
-    
+# static, 00 UTC, and 24h aggregation predictors
+predictors_00 = [
+    {'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
+    {'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
+    {'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
+    {'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
+    {'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
+    {'tclw':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
+    {'tcwv':'TOTCWV-KGM2:ERA5:5021:1:0:1:0'}, # total column water vapor 
+    {'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, # volumetric soil water layer 1 (0-7cm) (24h instantanous)
+    {'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, # volumetric soil water layer 2 (7-28cm) (24h instantanous)
+    {'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, # volumetric soil water layer 3 (28-100cm) (24h instantanous)
+    {'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'}, # volumetric soil water layer 4 (100-289cm) (24h instantanous)
+    {'ewss':'EWSS-NM2S:ERA5D:5021:1:0:1'}, # Previous day sum Eastward turbulent surface stress
+    {'e':'EVAP-M:ERA5D:5021:1:0:1'}, # Previous day sum Evaporation
+    {'nsss':'NSSS-NM2S:ERA5D:5021:1:0:1'}, # Previous day sum Northward turbulent surface stress
+    {'slhf':'FLLAT-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface latent heat flux
+    {'ssr':'RNETSWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface net solar radiation
+    {'str':'RNETLWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface net thermal radiation
+    {'sshf':'FLSEN-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface sensible heat flux
+    {'ssrd':'RADGLOA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface solar radiation downwards
+    {'strd':'RADLWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface thermal radiation downwards
+    {'tp':'RR-M:ERA5D:5021:1:0:1'}, # Previous day sum Total precipitation
+    {'ttr':'RTOPLWA-JM2:ERA5D:5021:1:0:1'}, # Previous day sum Top net thermal radiation
+    {'fg10':'FFG-MS:ERA5D:5021:1:0:1'}, # Previous day maximum 10m wind gust since previous post-processing (24h aggregation: max value of previous day)
+    {'mx2t':'max_t(TMAX-K:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day maximum Maximum temperature in the last 24h
+    {'mn2t':'TMIN-K:ERA5D:5021:1:0:1'} # Previous day minimum Minimum temperature in the last 24h
+]
+
+# 00 and 12 UTC predictors
+predictors_0012 = [
+    {'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind (6h instantanous)
+    {'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind (6h instantanous)
+    {'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature (6h instantanous)
+    {'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature (6h instantanous)
+    {'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure (6h instantanous)
+    {'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature (6h instantanous)
+    {'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover (6h instantanous)
+    {'kx': 'KX:ERA5:5021:1:0:0'}, # K index
+    {'t850': 'T-K:ERA5:5021:2:850:1:0'}, # temperature in K, pressure levels 500-850 hPa       
+    {'t700': 'T-K:ERA5:5021:2:700:1:0'},  
+    {'t500': 'T-K:ERA5:5021:2:500:1:0'},
+    {'q850': 'Q-KGKG:ERA5:5021:2:850:1:0'}, # specific humidity in kg/kg, pressure levels 500-850 hPa
+    {'q700': 'Q-KGKG:ERA5:5021:2:700:1:0'},
+    {'q500': 'Q-KGKG:ERA5:5021:2:500:1:0'},
+    {'u850': 'U-MS:ERA5:5021:2:850:1:0'}, # U comp of wind in m/s, pressure levels 500-850 hPa
+    {'u700': 'U-MS:ERA5:5021:2:700:1:0'},
+    {'u500': 'U-MS:ERA5:5021:2:500:1:0'},
+    {'v850': 'V-MS:ERA5:5021:2:850:1:0'}, # V comp of wind in m/s, pressure levels 500-850 hPa
+    {'v700': 'V-MS:ERA5:5021:2:700:1:0'},
+    {'v500': 'V-MS:ERA5:5021:2:500:1:0'},
+    {'z850': 'Z-M2S2:ERA5:5021:2:850:1:0'}, # geopotential in m2 s-2, pressure levels 500-850 hPa
+    {'z700': 'Z-M2S2:ERA5:5021:2:700:1:0'},
+    {'z500': 'Z-M2S2:ERA5:5021:2:500:1:0'},   
+]
+
+source='desm.harvesterseasons.com:8080' # server for timeseries query
+
+# get grid point lats lons 
+query=f'http://{source}/timeseries?bbox={bbox}&param=utctime,latitude,longitude,U10-MS:ERA5:5021:1:0:1:0&starttime={start}&endtime={start}&hour=0&format=json&precision=full&tz=utc&timeformat=sql'
+response=requests.get(url=query)
+results_json=json.loads(response.content)
+data = results_json[0]
+lats = data.get('latitude', '').strip('[]').split()
+lons = data.get('longitude', '').strip('[]').split()
+grid_points = {f'lat-{i+1}': lat for i, lat in enumerate(lats)}
+grid_points.update({f'lon-{i+1}': lon for i, lon in enumerate(lons)})
+
+# static and 00 parameters
+for pardict in predictors_00:
+    key, value = list(pardict.items())[0]
+    name=key
+    # hour 00 
+    df_00=ts_query(source,bbox,value,start,end,'0',name)
+    df_00_fin=filter_dataframe(df_00,grid_points,name)
+    print(df_00_fin)
+    df_00_fin.to_csv(f'{data_dir}era5_oceanids_{name}_{start}-{end}_{harbor_name}.csv',index=False) 
+
+# 00 and 12 UTC parameters
+for pardict in predictors_0012:
+    key, value = list(pardict.items())[0]
+    name=key
+    name1 = key + '-00'
+    name2 = key + '-12'
+    # hour 00 
+    df_00=ts_query(source,bbox,value,start,end,'0',name1)
+    df_00_fin=filter_dataframe(df_00,grid_points,name1)
+    print(df_00_fin)
+    df_00_fin.to_csv(f'{data_dir}era5_oceanids_{name1}_{start}-{end}_{harbor_name}.csv',index=False) 
+    # hour 12
+    df_12=ts_query(source,bbox,value,start,end,'12',name2)
+    df_12_fin=filter_dataframe(df_12,grid_points,name2)
+    print(df_12_fin)
+    df_12_fin.to_csv(f'{data_dir}era5_oceanids_{name2}_{start}-{end}_{harbor_name}.csv',index=False) 
+
 executionTime=(time.time()-startTime)
 print('Execution time in minutes: %.2f'%(executionTime/60))
