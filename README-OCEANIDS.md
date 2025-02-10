@@ -5,7 +5,7 @@ The code presented here reproduces the data and model training and prediction wo
 ## System requirements
 Python version 3.12.7 in the UNIX/Linux environment was used in this project.
 
-The time it takes to run the model training dependes f.ex. on the number of locations, number of predictors, selected hyperparameters, etc. For 4 locations, XX predictors and hyperparameters used, it took approximately XX hours to train the model, with 64 CPU cores and 228G memory. With the fitted model, predicting target parameter from seasonal forecast data takes around XX hours with a similar setup.
+The time it takes to download training data or run the model training dependes f.ex. on the number of locations, number of predictors, selected hyperparameters, etc. For 4 locations, XX predictors and hyperparameters used, it took approximately XX hours to train the model, with 64 CPU cores and 228G memory. With the fitted model, predicting target parameter from seasonal forecast data takes around XX hours with a similar setup.
 
 ## Dependencies
 To create xgb2 environment used in this project, check out the `xgb2.yml` file.
@@ -22,19 +22,17 @@ We use the GNU parallel: Tange, O., 2018. GNU Parallel 2018. Available at: https
 
 ## Downloading the predictors and predictand data
 
-To train an XGBoost model, observational data is required as the predictand (target parameter) in fitting, such as wind gust, temperature or precipitation. We use ERA5 reanalysis data and derived features as predictors (input variables): time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API. Details of all the predictands and predictors available are provided in Tables 1, 2, and 3 at the end of this file.
+To train an XGBoost model, observational data is required as the predictand (target parameter) in fitting, such as wind gust, temperature or precipitation. We use ERA5 and ERA5D (daily statistics) reanalysis data and derived features as predictors (input variables): time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API. Details of all the predictands and predictors available are provided in Tables 1, 2, and 3 at the end of this file.
 
-For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end times. Output is a csv file for each parameter. Check the directory structures defined in the scripts.
+For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end (note: these should follow the Smartmet-server Timeseries query formatting). Output is a csv file for each parameter. Check the directory structures defined in the scripts.
 
-You need to download the predictand data aka the observations for your selected location and save them in a csv. Anni will add Description of table structure here. We run the `ts-obs-oceanids.py` script to ts query observations for Finnish stations but this needs fmi-apikey which is not shared outside organisation.
+You need to download the predictand data aka the observations for your selected location and save them in a csv file. Anni will add Description of table structure here. We run the `ts-obs-oceanids.py` script to ts query observations for Finnish stations but this needs fmi-apikey which is not shared outside organisation.
 
-To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files.
+To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files. Example usage: `python ts-era5-oceanids.py Vuosaari`.
 
-To combine all predictor CSV files into a single training data input file, run the script `join-training-data.sh.`
+To combine all predictor CSV files into a single training data input file, run the script `join-training-data.sh.` Example usage: `./join-training-data.sh Vuosaari`.
 
-To get the ERA5/ERA5D derived or other additional predictors, run `add-predictors-oceanids.py`.
-
-`calc-clim-oceanids.py`
+To get the ERA5/ERA5D derived or other additional predictors, run `add-predictors-oceanids.py`. Example usage: `python add-predictors-oceanids.py Vuosaari`. 
 
 To plot the location and four nearest grid points on map, run `.py`. 
 
@@ -43,11 +41,14 @@ Figure 1 Example: Training locations 1 to 4, along with the Raahe observation si
 
 ## Training the model
 
+These scripts use config files `harbors_config.json` and `training_data_config.json` where latter defines the column headers for predictors used in training the model. Also, KFold run creates location-specific config files for best train/validation dataset split (by years) and Optuna run creates location-specific config files for hyperparameters. 
+
+To perform the K-Fold cross-validation (split input dataset to optimal training and testing sets by years), run `xgb-fit-KFold-era5-oceanids.py`. Result is printed to terminal. Example usage: `python xgb-fit-KFold-era5-oceanids.py Vuosaari`. 
+
 To perform the Optuna hyperparameter tuning (https://optuna.org/), run `xgb-fit-optuna-era5-oceanids.py`. Check the results on your Optuna Dashboard view.
 
 To train the model with tuned hyperparameters, run `xgb-fit-era5-oceanids.py`. The fitted model is saved as a json file and relevant information is written to a log file, including RMSE/MAE.
 
-To perform the K-Fold cross-validation (split input dataset to optimal training and testing sets by years), run `xgb-fit-KFold-era5-oceanids.py`.  
 
 <!--To create the cross-correlation matrix and correlation bar chart figures, run `cross-correlation-swi2.py`.-->
 
