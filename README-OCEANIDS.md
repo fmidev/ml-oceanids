@@ -41,18 +41,17 @@ Figure 1 Example: Training locations 1 to 4, along with the Raahe observation si
 
 ## Training the model
 
-These scripts use config files `harbors_config.json` and `training_data_config.json` where latter defines the column headers for predictors used in training the model. Also, KFold run creates location-specific config files for best train/validation dataset split (by years) and Optuna run creates location-specific config files for hyperparameters. 
+These scripts use config files `harbors_config.json` and `training_data_config.json` where latter defines the column headers for predictors used in training the model. Also, KFold run creates location-specific config files for best train/validation dataset split (by years) and Optuna run creates location-specific config files for hyperparameters.
 
-To perform the K-Fold cross-validation (split input dataset to optimal training and testing sets by years), run `xgb-fit-KFold-era5-oceanids.py`. Result is printed to terminal. Example usage: `python xgb-fit-KFold-era5-oceanids.py Vuosaari`. 
+First, to perform the K-Fold cross-validation (split input dataset to optimal training and testing sets by years), run `xgb-fit-KFold-era5-oceanids.py`. Result is printed to terminal and best split is written to location specific config file. Example usage: `python xgb-fit-KFold-era5-oceanids.py Vuosaari`. 
 
-To perform the Optuna hyperparameter tuning (https://optuna.org/), run `xgb-fit-optuna-era5-oceanids.py`. Check the results on your Optuna Dashboard view.
+Second, to perform the Optuna hyperparameter tuning (https://optuna.org/), run `xgb-fit-optuna-era5-oceanids.py`. Check the results on your Optuna Dashboard view. Example usage: `python xgb-fit-optuna-era5-oceanids.py Vuosaari`.
 
-To train the model with tuned hyperparameters, run `xgb-fit-era5-oceanids.py`. The fitted model is saved as a json file and relevant information is written to a log file, including RMSE/MAE.
-
+And then, to train the model with tuned hyperparameters, run `xgb-fit-era5-oceanids.py`. The fitted model is saved as a json file. Example usage: `python xgb-fit-era5-oceanids.py Vuosaari`. If you didn't use KFold or Optuna, you need to specify config files for hyperparameters and train/validation years split before running this script. 
 
 <!--To create the cross-correlation matrix and correlation bar chart figures, run `cross-correlation-swi2.py`.-->
 
-To create the F-score (feature importance) figure, run `xgb-analysis-era5-oceanids.py`. This needs as input the trained model.
+To create the F-score (feature importance) figure, run `xgb-analysis-fscore-oceanids.py`. To create the mean absolute SHAP values figure, run `xgb-analysis-shap-oceanids.py`.
 
 ## Predicting target parameters
 Scripts for predicting target parameters can be found from https://github.com/fmidev/harvesterseasons-smartmet/tree/destine/bin. Predicting target parameters requires first downloading the data and pre-processing as all input data must be re-gridded. `get-seasonal.sh` downloads (latest or user-specified start month+year) the seasonal forecast (https://cds.climate.copernicus.eu/cdsapp#!/dataset/seasonal-original-single-levels?tab=overview) and other necessary data for the European area. The script performs also statistical bias-adjusting and downscaling for several parameters. Preprocessing uses the GNU parallel and CDO.
