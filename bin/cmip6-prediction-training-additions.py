@@ -38,7 +38,7 @@ def process_variable_group(df, pred, include_pred_stats=True):
     # Select only the required columns
     required_columns = ['utctime','lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4','pr-1','pr-2','pr-3','pr-4',
                         'sfcWind-1','sfcWind-2','sfcWind-3','sfcWind-4','tasmax-1','tasmax-2','tasmax-3','tasmax-4','tasmin-1','tasmin-2','tasmin-3','tasmin-4',
-                        'dayofyear', 'year', 'month', f'{pred}_mean', f'{pred}_min', f'{pred}_max', f'{variable_prefix}_sum',
+                        'dayOfYear', 'year', 'month', f'{pred}_mean', f'{pred}_min', f'{pred}_max', f'{variable_prefix}_sum',
                         f'{variable_prefix}_sum_mean', f'{variable_prefix}_sum_min', f'{variable_prefix}_sum_max',
                         f'{variable_prefix}_{pred}_diff_mean', f'{variable_prefix}_{pred}_diff_min', f'{variable_prefix}_{pred}_diff_max']
     return df[required_columns]

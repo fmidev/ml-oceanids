@@ -8,7 +8,7 @@ Python version 3.12.7 in the UNIX/Linux environment was used in this project.
 The time it takes to download training data or run the model training dependes f.ex. on the number of locations, number of predictors, selected hyperparameters, etc. For 4 locations, XX predictors and hyperparameters used, it took approximately XX hours to train the model, with 64 CPU cores and 228G memory. With the fitted model, predicting target parameter from seasonal forecast data takes around XX hours with a similar setup.
 
 ## Dependencies
-To create xgb2 environment used in this project, check out the `xgb2.yml` file.
+To create xgb2 environment used in this project, check out the `xgb2.yml` file. NOTE xgb2.yml needs updating here!!
 
 To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/how-to-api. You will need to register for an ECMWF account to download data from CDS.
 
@@ -34,7 +34,7 @@ To combine all predictor CSV files into a single training data input file, run t
 
 To get the ERA5/ERA5D derived or other additional predictors, run `add-predictors-oceanids.py`. Example usage: `python add-predictors-oceanids.py Vuosaari`. 
 
-To plot the location and four nearest grid points on map, run `.py`. 
+To plot the location and four nearest grid points on map, run `plot-era5-oceanids.py`. Example usage: `python plot-era5-oceanids.py Vuosaari`. 
 
 ![Training locations](Raahe-101785.jpg)
 Figure 1 Example: Training locations 1 to 4, along with the Raahe observation site (red).

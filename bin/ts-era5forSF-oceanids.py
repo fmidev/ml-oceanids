@@ -3,10 +3,10 @@ import time, warnings,requests,json
 import pandas as pd
 import warnings
 #from Raahe_101785 import * # import bbox, harbor, FMISID, cols_own, fname, test_y, train_y, mdl_name
-#from Vuosaari_151028 import *
+from Vuosaari_151028 import *
 #from Rauma_101061 import *
 #from Malaga_000231_simple import *
-from Bremerhaven_004885 import *
+#from Bremerhaven_004885 import *
 warnings.simplefilter(action='ignore', category=FutureWarning)
 # SmarMet-server timeseries query to fetch ERA5 training data for ML
 # training data preprocessed to match seasonal forecast (sf) data for prediction
@@ -25,6 +25,16 @@ def filter_points(df,lat,lon,nro,name):
 
 data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/'+harbor+'/' 
 
+# static predictors
+'''statics = [
+    #{'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
+    #{'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
+    #{'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
+    #{'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
+    #{'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
+]
+'''
+
 # 00 UTC predictors
 predictors_instant = [
     #{'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind (6h instantanous)
@@ -36,6 +46,28 @@ predictors_instant = [
     #{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature (6h instantanous)
     #{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover (6h instantanous)
     #{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
+    #{'kx': 'KX:ERA5:5021:1:0:0'}, # K index
+    #{'t850': 'T-K:ERA5:5021:2:850:1:0'}, # temperature in K        
+    #{'t700': 'T-K:ERA5:5021:2:700:1:0'},  
+    #{'t500': 'T-K:ERA5:5021:2:500:1:0'},
+    #{'q850': 'Q-KGKG:ERA5:5021:2:850:1:0'}, # specific humidity in kg/kg
+    #{'q700': 'Q-KGKG:ERA5:5021:2:700:1:0'},
+    #{'q500': 'Q-KGKG:ERA5:5021:2:500:1:0'},
+    #{'u850': 'U-MS:ERA5:5021:2:850:1:0'}, # U comp of wind in m/s
+    #{'u700': 'U-MS:ERA5:5021:2:700:1:0'},
+    #{'u500': 'U-MS:ERA5:5021:2:500:1:0'},
+    #{'v850': 'V-MS:ERA5:5021:2:850:1:0'}, # V comp of wind in m/s
+    #{'v700': 'V-MS:ERA5:5021:2:700:1:0'},
+    #{'v500': 'V-MS:ERA5:5021:2:500:1:0'},
+    #{'z850': 'Z-M2S2:ERA5:5021:2:850:1:0'}, # geopotential in m2 s-2
+    #{'z700': 'Z-M2S2:ERA5:5021:2:700:1:0'},
+    #{'z500': 'Z-M2S2:ERA5:5021:2:500:1:0'},   
+    #{'tcwv':'TOTCWV-KGM2:ERA5:5021:1:0:1:0'}, # total column water vapor here
+    #{'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, # volumetric soil water layer 1 (0-7cm) (24h instantanous)
+    #{'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, # volumetric soil water layer 2 (7-28cm) (24h instantanous)
+    #{'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, # volumetric soil water layer 3 (28-100cm) (24h instantanous)
+    #{'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'} # volumetric soil water layer 4 (100-289cm) (24h instantanous)
+ 
 ]
 # previous day 24h sums 
 predictors_24hAgg = [
@@ -46,13 +78,16 @@ predictors_24hAgg = [
     #{'ssr':'sum_t(RNETSWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface net solar radiation (24h aggregation since beginning of forecast)
     #{'str':'sum_t(RNETLWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface net thermal radiation (24h aggregation since beginning of forecast)
     #{'sshf':'sum_t(FLSEN-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface sensible heat flux (24h aggregation since beginning of forecast)
-    {'ssrd':'sum_t(RADGLOA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface solar radiation downwards (24h aggregation since beginning of forecast)
+    #{'ssrd':'sum_t(RADGLOA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface solar radiation downwards (24h aggregation since beginning of forecast)
     #{'strd':'sum_t(RADLWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface thermal radiation downwards (24h aggregation since beginning of forecast)
     #{'tp':'sum_t(RR-M:ERA5:5021:1:0:1:0/24h/0h)'} # total precipitation (24h aggregation since beginning of forecast)
+    #{'ttr':'sum_t(RTOPLWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # top net thermal radiation (24h aggregation since beginning of forecast)
 ]
 # previous day maximum 
 predictor_24hmax = [
     #{'fg10':'max_t(FFG-MS:ERA5:5021:1:0:1:0/24h/0h)'}, # 10m wind gust since previous post-processing (24h aggregation: max value of previous day)
+    {'mx2t':'max_t(TMAX-K:ERA5:5021:1:0:1:0/24h/0h)'}, # Maximum temperature in the last 24h
+    #{'mn2t':'min_t(TMIN-K:ERA5:5021:1:0:1:0/24h/0h)'} # Minimum temperature in the last 24h
 ]
 source='desm.harvesterseasons.com:8080' # server for timeseries query
 # get grid point lats lons (have to add parameter to query otherwise only one grid point is returned...)

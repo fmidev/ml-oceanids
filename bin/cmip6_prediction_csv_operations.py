@@ -59,7 +59,7 @@ combined_df = combined_df[['date'] + lat_lon_columns + [col for col in combined_
 combined_df = combined_df.rename(columns={'date': 'utctime'})
 
 combined_df['utctime'] = pd.to_datetime(combined_df['utctime'], errors='coerce')
-combined_df['dayofyear'] = combined_df['utctime'].dt.dayofyear
+combined_df['dayOfYear'] = combined_df['utctime'].dt.dayofyear
 
 # Save the combined DataFrame to a new CSV file
 combined_df.to_csv(f"/home/ubuntu/data/ML/training-data/OCEANIDS/prediction_data_oceanids_ece3-{loc}-2050-2100.csv", index=False)

@@ -1,0 +1,5 @@
+python xgb-fit-oceanids.py Raahe_101785 --pred WG_PT24H_MAX
+python xgb-fit-oceanids.py Raahe_101785 --pred TP_PT24H_SUM
+python xgb-fit-oceanids.py Rauma_101061 --pred WG_PT24H_MAX
+python xgb-fit-oceanids.py Rauma_101061 --pred TP_PT24H_SUM
+

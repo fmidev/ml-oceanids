@@ -85,7 +85,7 @@ for pred, pred_name in preds.items():
 
 
 #Add dayofyear column
-main_df['dayofyear'] = main_df['utctime'].dt.dayofyear
+main_df['dayOfYear'] = main_df['utctime'].dt.dayofyear
 
 # Replace -9999 with NaN across the DataFrame
 main_df.replace(-9999, np.nan, inplace=True)

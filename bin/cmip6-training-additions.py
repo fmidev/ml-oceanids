@@ -1,22 +1,30 @@
 import pandas as pd
 
 # Read the CSV file into a DataFrame
-df = pd.read_csv('/home/ubuntu/data/ML/training-data/OCEANIDS/ece3-Bremerhaven.csv')
+df = pd.read_csv('/home/ubuntu/data/ML/training-data/OCEANIDS/training_data_oceanids_Raahe-sf_2013-2023.csv')
 pred = 'TX_PT24H_MAX'
 
 # Define the correlation mappings
 correlation_mappings = {
-    'WG_PT24H_MAX': 'sfcWind',
-    'WS_PT24H_AVG': 'sfcWind',
-    'TN_PT24H_MIN': 'tasmin',
-    'TX_PT24H_MAX': 'tasmax',
-    'TP_PT24H_SUM': 'pr'
+    'WG_PT24H_MAX': 'fg10',
+    'WS_PT24H_AVG': '',
+    'TN_PT24H_MIN': 'mn2t',
+    'TX_PT24H_MAX': 'mx2t',
+    'TP_PT24H_SUM': 'tp'
 }
 
 # Convert 'utctime' to datetime and extract year and month
 df['utctime'] = pd.to_datetime(df['utctime'])
 df['year'] = df['utctime'].dt.year
 df['month'] = df['utctime'].dt.month
+#df['mn2t-1'] = df['mn2t-1'] - 273.15
+#df['mn2t-2'] = df['mn2t-2'] - 273.15
+#df['mn2t-3'] = df['mn2t-3'] - 273.15
+#df['mn2t-4'] = df['mn2t-4'] - 273.15
+#df['mx2t-1'] = df['mx2t-1'] - 273.15
+#df['mx2t-2'] = df['mx2t-2'] - 273.15
+#df['mx2t-3'] = df['mx2t-3'] - 273.15
+#df['mx2t-4'] = df['mx2t-4'] - 273.15
 
 # Function to process the variable group based on the pred
 def process_variable_group(pred):
@@ -57,5 +65,5 @@ def process_variable_group(pred):
 df = process_variable_group(pred)
 
 # Save the updated DataFrame to a new CSV file
-df.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/ece3-Bremerhaven-{pred}.csv', index=False)
+df.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/training_data_oceanids_Raahe-sf_2013-2023-{pred}.csv', index=False)
 print(df)

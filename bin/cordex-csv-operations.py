@@ -18,7 +18,7 @@ df1 = df1[(df1['utctime'] >= start_date) & (df1['utctime'] <= end_date)]
 df_merged = pd.merge(df1, df2[['utctime', 'WG_PT24H_MAX','WS_PT24H_AVG','TP_PT24H_SUM','TN_PT24H_MIN','TX_PT24H_MAX']], on='utctime', how='left')
 
 #Add dayofyear column
-df_merged['dayofyear'] = df_merged['utctime'].dt.dayofyear
+df_merged['dayOfYear'] = df_merged['utctime'].dt.dayofyear
 
 # Save the updated df_merged to a new CSV file if needed
 df_merged.to_csv('/home/ubuntu/data/ML/training-data/OCEANIDS/training_data_oceanids-Bremerhaven-sf_2000-2023.csv', index=False)

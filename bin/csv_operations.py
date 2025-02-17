@@ -1,21 +1,28 @@
 import pandas as pd
 
 # Load the datasets
-file1 = "/home/ubuntu/data/ML/training-data/OCEANIDS/prediction_data_oceanids_ece3-Bremerhaven-2000-2100.csv" 
-file2 = "/home/ubuntu/data/ML/training-data/OCEANIDS/ece3-Bremerhaven.csv"
+file1 = "/home/ubuntu/data/synop/fmisid115857_PraiaDaVittoria2012-2024_ws-wd-wg_3h.csv"
 
-df1 = pd.read_csv(file1)
-df2 = pd.read_csv(file2)
+# Read the CSV file
+df1 = pd.read_csv(file1, usecols=['time', 'WG_PT10M_MAX'])
 
-# List of columns to replace
-columns_to_replace = ['WS_PT24H_AVG', 'TP_PT24H_SUM', 'WG_PT24H_MAX', 'TN_PT24H_MIN', 'TX_PT24H_MAX']
+# Convert the 'time' column to datetime
+df1['time'] = pd.to_datetime(df1['time'])
+df1.rename(columns={'time': 'utctime'}, inplace=True)
 
-# Replace the columns in df1 with the ones from df2
-for column in columns_to_replace:
-    df1[column] = df2[column]
+# Set the 'utctime' column as the index
+df1.set_index('utctime', inplace=True)
 
-# Save the modified df1 back to a CSV file
-df1.to_csv(file1, index=False)
+# Resample to daily frequency and calculate sum values, preserving NaNs
+daily_sum = df1['WG_PT10M_MAX'].resample('D').max()
+#daily_sum_min = df1['TA_PT12H_MIN'].resample('D').min()
+#daily_sum = pd.concat([daily_sum_max, daily_sum_min], axis=1)
+
+# Reset the index to include the 'utctime' column
+daily_sum = daily_sum.reset_index()
+
+# Save the modified DataFrame back to a CSV file
+daily_sum.to_csv('/home/ubuntu/data/synop/wmo-praiadavittoria_wg_2012-2024.csv', index=False)
 
 
 

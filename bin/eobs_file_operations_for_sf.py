@@ -4,25 +4,25 @@ import sys
 
 loc = sys.argv[1]
 preds = {
-    'FG': 'WS_PT24H_AVG', 
+    #'FG': 'WS_PT24H_AVG', 
     'RR': 'TP_PT24H_SUM',
-    'FX': 'WG_PT24H_MAX',
+    #'FX': 'WG_PT24H_MAX',
     'TN': 'TN_PT24H_MIN',
     'TX': 'TX_PT24H_MAX',
     # Add more predictors here as needed
 }
 id = sys.argv[2]
-file_name = f'training_data_oceanids-{loc}-sf_2000-2023.csv'
-output_file_name = f'training_data_oceanids-{loc}-sf_2000-2023.csv'
+file_name = f'training_data_oceanids_{loc}-sf_2000-2023.csv'
+output_file_name = f'training_data_oceanids_{loc}-sf_2000-2023.csv'
 
 # Define the start and end dates
-start_date = '2000-01-01'
+start_date = '2000-09-01'
 start_date = pd.to_datetime(start_date)
 end_date = '2023-08-31'
 end_date = pd.to_datetime(end_date)
 
 # Load your main dataset
-main_df = pd.read_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/{loc}/{file_name}')
+main_df = pd.read_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/{file_name}')
 
 # Ensure the 'utctime' column is in datetime format
 main_df['utctime'] = pd.to_datetime(main_df['utctime'], format='%Y-%m-%d', errors='coerce')  # Handle invalid dates if needed
@@ -67,7 +67,7 @@ for pred, pred_name in preds.items():
 
 
 #Add dayofyear column
-main_df['dayofyear'] = main_df['utctime'].dt.dayofyear
+main_df['dayOfYear'] = main_df['utctime'].dt.dayofyear
 
 # Save the updated dataset to a new CSV file
 main_df.to_csv(f"/home/ubuntu/data/ML/training-data/OCEANIDS/{output_file_name}", index=False)
