@@ -46,7 +46,9 @@ To plot the location and four nearest grid points on map, run `plot-era5-oceanid
 ![Training locations](Raahe_training-locs.png)
 Figure 1 Example: Training locations 1 to 4, along with the Raahe observation site (red).
 
-## Training the model
+## Training the model (OPTION 2)
+
+If you run fit-era5-oceanids.sh (Option 1), these steps are included already. If you choose to run them manually, follow instructions here.
 
 These scripts use config files `harbors_config.json` and `training_data_config.json` where latter defines the column headers for predictors used in training the model. Also, KFold run creates location-specific config files for best train/validation dataset split (by years) and Optuna run creates location-specific config files for hyperparameters.
 
