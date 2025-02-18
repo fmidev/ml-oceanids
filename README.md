@@ -43,7 +43,7 @@ To get the ERA5/ERA5D derived or other additional predictors, run `add-predictor
 
 To plot the location and four nearest grid points on map, run `plot-era5-oceanids.py`. Example usage: `python plot-era5-oceanids.py Vuosaari`. 
 
-![Training locations](Raahe-101785.jpg)
+![Training locations](Raahe_training-locs.png)
 Figure 1 Example: Training locations 1 to 4, along with the Raahe observation site (red).
 
 ## Training the model
