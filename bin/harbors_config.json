@@ -2,7 +2,7 @@
     "Vuosaari": {
         "latitude": 60.20867,
         "longitude": 25.1959,
-        "start": "20130101T000000Z",
+        "start": "20130701T000000Z",
         "end": "20241231T000000Z"
     },
     "Rauma": {
@@ -38,6 +38,12 @@
     "PraiaDaVittoria": {
         "latitude": 38.7666702,
         "longitude": -27.1000004,
+        "start":"20121125T000000Z",
+        "end":"20250101T000000Z"
+    },
+    "PontaDelgada": {
+        "latitude": 37.7333298,
+        "longitude": -25.700000,
         "start":"20121125T000000Z",
         "end":"20250101T000000Z"
     }
