@@ -73,6 +73,14 @@ Predicting with the trained model happens with `run-xgb-predict-oceanids.sh`, an
 |:-|:-|:-|:-|:-|:-|
 |ts-obs-oceanids.py|location name|csv file for observations time series|harbors_config.json||ts query for station observations|
 |ts-era5-oceanids.py|location name|csv files for ERA5/ERA5D time series, bbox config file|harbors_config.json|{loc}_bbox_config.json|ts queries for ERA5/ERA5D data|
+|join-training-data.sh|location name|csv file for training data and obs|||Join all the data files into a single training data file for loc|
+|||||||
+|||||||
+|||||||
+|||||||
+|||||||
+|||||||
+|||||||
 
 
 ## Predictands
