@@ -27,18 +27,21 @@ location = st.sidebar.selectbox(
 @st.cache_data
 def load_data(location):
     location_files = {
-        "Bremerhaven": "/home/ubuntu/data/ML/ECXSF_202501_WG_PT24H_MAX_Bremerhaven_004885.csv",
-        "Malaga": "/home/ubuntu/data/ML/ECXSF_202501_WG_PT24H_MAX_Malaga_000231.csv",
-        "Raahe": "/home/ubuntu/data/ML/ECXSF_202501_WG_PT24H_MAX_Raahe_101785.csv",
-        "Rauma": "/home/ubuntu/data/ML/ECXSF_202501_WG_PT24H_MAX_Rauma_101061.csv",
-        "Vuosaari": "/home/ubuntu/data/ML/ECXSF_202501_WG_PT24H_MAX_Vuosaari_151028.csv"
+        "Bremerhaven": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Bremerhaven.csv",
+        "Malaga": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Malaga.csv", 
+        "Raahe": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Raahe.csv",
+        "Rauma": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Rauma.csv",
+        "Vuosaari": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Vuosaari.csv"
     }
     return pd.read_csv(location_files[location])
 
 data = load_data(location)
 
-# Convert valid_time to datetime
-data['valid_time'] = pd.to_datetime(data['valid_time'])
+# Ensure 'utctime' exists before converting to datetime
+if 'utctime' in data.columns:
+    data['utctime'] = pd.to_datetime(data['utctime'])
+else:
+    print("Column 'utctime' does not exist in the DataFrame")
 
 # Time series analysis at the top
 st.subheader("Time Series Analysis")
@@ -65,7 +68,7 @@ with col1:
     
     # Plot percentage time series
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(data['valid_time'], percentage_above, 'r-', label=f'% Above {threshold} m/s')
+    ax.plot(data['utctime'], percentage_above, 'r-', label=f'% Above {threshold} m/s')
     ax.axhline(y=percentage_threshold, color='b', linestyle='--', label=f'{percentage_threshold}% Threshold')
     ax.set_xlabel('Date')
     ax.set_ylabel('Percentage of Ensemble Members (%)')
@@ -78,7 +81,7 @@ with col1:
 with col2:
     # Create percentage_stats DataFrame first
     percentage_stats = pd.DataFrame({
-        'Timestamp': data['valid_time'],
+        'Timestamp': data['utctime'],
         'Percentage_Above': percentage_above
     })
     
@@ -200,11 +203,11 @@ fig, ax = plt.subplots(figsize=(15, 8))
 
 # Plot each ensemble member
 for column in forecast_columns:
-    ax.plot(data['valid_time'], data[column], alpha=0.3, linewidth=0.5)
+    ax.plot(data['utctime'], data[column], alpha=0.3, linewidth=0.5)
 
 # Add mean line with different color and thickness
 data['ensemble_mean'] = data[forecast_columns].mean(axis=1)
-ax.plot(data['valid_time'], data['ensemble_mean'], 'r-', 
+ax.plot(data['utctime'], data['ensemble_mean'], 'r-', 
         linewidth=2, label='Ensemble Mean')
 
 ax.set_xlabel('Date')

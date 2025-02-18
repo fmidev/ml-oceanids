@@ -1,8 +1,9 @@
 import pandas as pd
+import sys
 
 def convert_to_daily(csv_file, start_date=None, column_mapping=None, agg_rules=None):
     """
-    Convert high-frequency observations to daily values with specific aggregation rules.
+    Convert high-frequency observations to daily values.
     
     Args:
         csv_file (str): Path to input CSV file
@@ -16,6 +17,12 @@ def convert_to_daily(csv_file, start_date=None, column_mapping=None, agg_rules=N
     # Read CSV file
     df = pd.read_csv(csv_file)
     df['time'] = pd.to_datetime(df['time'])
+    
+    # Store first row's lat/lon
+    location_info = {
+        'latitude': df['lat'].iloc[0],
+        'longitude': df['lon'].iloc[0]
+    }
     
     # Filter by start date if provided
     if start_date:
@@ -86,6 +93,10 @@ def convert_to_daily(csv_file, start_date=None, column_mapping=None, agg_rules=N
     daily_data = daily_data.reset_index()
     daily_data = daily_data.rename(columns={'index': 'utctime'})
     
+    # Add lat/lon columns with their new names
+    daily_data['latitude'] = location_info['latitude']
+    daily_data['longitude'] = location_info['longitude']
+    
     return daily_data
 
 def merge_daily_files(daily_dfs, date_column='utctime'):
@@ -104,15 +115,24 @@ def merge_daily_files(daily_dfs, date_column='utctime'):
     if not daily_dfs:
         return None
         
-    # Start with the first DataFrame
+    # Start with the first DataFrame, keeping lat/lon
     merged_df = daily_dfs[0]
+    location_info = {
+        'latitude': merged_df['latitude'].iloc[0],
+        'longitude': merged_df['longitude'].iloc[0]
+    }
     
-    # Merge with remaining DataFrames
+    # Merge with remaining DataFrames, excluding their lat/lon columns
     for df in daily_dfs[1:]:
-        merged_df = merged_df.merge(df, on=date_column, how='outer')
+        df_without_location = df.drop(columns=['latitude', 'longitude'])
+        merged_df = merged_df.merge(df_without_location, on=date_column, how='outer')
     
     # Sort by date
     merged_df = merged_df.sort_values(date_column)
+    
+    # Ensure single lat/lon values
+    merged_df['latitude'] = location_info['latitude']
+    merged_df['longitude'] = location_info['longitude']
     
     # Round numeric columns to 2 decimal places
     numeric_cols = merged_df.select_dtypes(include=['float64']).columns
@@ -122,13 +142,13 @@ def merge_daily_files(daily_dfs, date_column='utctime'):
 
 def standardize_column_names(df):
     """
-    Standardize column names to FMI format with PT24H period.
+    Standardize column names to FMI format with PT24H period and reorder columns.
     
     Args:
         df (pd.DataFrame): DataFrame with simplified column names
         
     Returns:
-        pd.DataFrame: DataFrame with standardized column names
+        pd.DataFrame: DataFrame with standardized column names and ordered columns
     """
     column_mapping = {
         'WG': 'WG_PT24H_MAX',
@@ -138,7 +158,18 @@ def standardize_column_names(df):
         'RH': 'RH_PT24H_AVG'
     }
     
-    return df.rename(columns=column_mapping)
+    # Rename columns first
+    df = df.rename(columns=column_mapping)
+    
+    # Define column order
+    base_cols = ['utctime', 'latitude', 'longitude', 'name']
+    pred_cols = ['WG_PT24H_MAX', 'TA_PT24H_MAX', 'TA_PT24H_MIN', 'TP_PT24H_ACC', 'RH_PT24H_AVG']
+    
+    # Reorder columns, only including prediction columns that exist
+    available_pred_cols = [col for col in pred_cols if col in df.columns]
+    ordered_cols = base_cols + available_pred_cols
+    
+    return df[ordered_cols]
 
 if __name__ == "__main__":    
     import argparse
@@ -146,6 +177,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process FMI observations to daily values')
     parser.add_argument('--start-date', type=str, help='Start date in YYYY-MM-DD format')
     args = parser.parse_args()
+
+    name = sys.argv[1]
     
     # Convert files to daily values
     files = [
@@ -156,6 +189,7 @@ if __name__ == "__main__":
     # Process each file and merge
     daily_dfs = [convert_to_daily(f, start_date=args.start_date) for f in files]
     merged_df = merge_daily_files(daily_dfs)
+    merged_df["name"] = 'Lajes'
     
     if merged_df is not None:
         # Standardize column names
@@ -163,7 +197,7 @@ if __name__ == "__main__":
         
         # Get year range for filename
         year_range = f"{merged_df['utctime'].dt.year.min()}-{merged_df['utctime'].dt.year.max()}"
-        output_file = f"/home/ubuntu/data/synop/obs_data_PraiaDaVittoria_2012-2024.csv"
+        output_file = f"/home/ubuntu/data/ML/training-data/OCEANIDS/obs/obs_oceanids_PraiaDaVittoria_2012-2024.csv"
         merged_df.to_csv(output_file, index=False)
         print(merged_df.head())
         print(f"Saved daily observations to {output_file}")
