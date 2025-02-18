@@ -32,7 +32,7 @@ For training the model you will need a table of the predictand and all predictor
 You need to download the predictand data aka the observation time series for your selected location and save them in a csv file (file name should follow: `obs-oceanids-{harbor_name}.csv`). We run the `ts-obs-oceanids.py` script to ts query observations for Finnish stations but this needs fmi-apikey which is not shared outside organisation.
 
 ### OPTION 1
-The following steps can be run from script fit-era5-oceanis.sh, or separately as described in Option 2. Example usage for several locations and predictands: `parallel -j1 ./fit-era5-oceanids.sh {\1} {\2} ::: Raahe Rauma Raahe ::: WG_PT24H_MAX TA_PT24H_MAX TA_PT24H_MIN TP_PT24H_ACC`
+The following steps can be run from script fit-era5-oceanis.sh, or separately as described in Option 2. Example usage for several locations and predictands: `parallel -j1 ./fit-era5-oceanids.sh {\1} {\2} ::: Raahe Rauma Vuosaari ::: WG_PT24H_MAX TA_PT24H_MAX TA_PT24H_MIN TP_PT24H_ACC`
 
 ### OPTION 2
 To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It fetches the static, 24h accumulated/max/min, and 00 and 12 UTC hourly time series data, saves them per predictor as csv files. Example usage: `python ts-era5-oceanids.py Raahe`.
