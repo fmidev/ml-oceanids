@@ -98,17 +98,17 @@ bbox = get_bbox(latitude, longitude,harbor_name, buffer_degrees=0.25)
 
 # static, 00 UTC, and 24h aggregation predictors
 predictors_00 = [
-    #{'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
-    #{'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
-    #{'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
-    #{'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
-    #{'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
-    #{'tclw':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
-    #{'tcwv':'TOTCWV-KGM2:ERA5:5021:1:0:1:0'}, # total column water vapor 
-    #{'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, # volumetric soil water layer 1 (0-7cm) (24h instantanous)
-    #{'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, # volumetric soil water layer 2 (7-28cm) (24h instantanous)
-    #{'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, # volumetric soil water layer 3 (28-100cm) (24h instantanous)
-    #{'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'}, # volumetric soil water layer 4 (100-289cm) (24h instantanous)
+    {'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
+    {'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
+    {'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
+    {'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
+    {'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
+    {'tclw':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
+    {'tcwv':'TOTCWV-KGM2:ERA5:5021:1:0:1:0'}, # total column water vapor 
+    {'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, # volumetric soil water layer 1 (0-7cm) (24h instantanous)
+    {'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, # volumetric soil water layer 2 (7-28cm) (24h instantanous)
+    {'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, # volumetric soil water layer 3 (28-100cm) (24h instantanous)
+    {'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'}, # volumetric soil water layer 4 (100-289cm) (24h instantanous)
     ##OLD {'ewss':'sum_t(EWSS-NM2S:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day sum Eastward turbulent surface stress
     ##OLD{'e':'sum_t(EVAP-M:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day sum Evaporation
     ##OLD{'nsss':'sum_t(NSSS-NM2S:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day sum Northward turbulent surface stress
@@ -127,47 +127,47 @@ predictors_00 = [
 
 # era5d predictors
 predictors_era5d = [    
-    #{'ewss':'EWSS-NM2S:ERA5D:5021:1:0:1'}, # Previous day sum Eastward turbulent surface stress
-    #{'e':'EVAP-M:ERA5D:5021:1:0:1'}, # Previous day sum Evaporation
-    #{'nsss':'NSSS-NM2S:ERA5D:5021:1:0:1'}, # Previous day sum Northward turbulent surface stress
-    #{'slhf':'FLLAT-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface latent heat flux
-    #{'ssr':'RNETSWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface net solar radiation
-    #{'str':'RNETLWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface net thermal radiation
-    #{'sshf':'FLSEN-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface sensible heat flux
+    {'ewss':'EWSS-NM2S:ERA5D:5021:1:0:1'}, # Previous day sum Eastward turbulent surface stress
+    {'e':'EVAP-M:ERA5D:5021:1:0:1'}, # Previous day sum Evaporation
+    {'nsss':'NSSS-NM2S:ERA5D:5021:1:0:1'}, # Previous day sum Northward turbulent surface stress
+    {'slhf':'FLLAT-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface latent heat flux
+    {'ssr':'RNETSWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface net solar radiation
+    {'str':'RNETLWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface net thermal radiation
+    {'sshf':'FLSEN-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface sensible heat flux
     {'ssrd':'RADGLOA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface solar radiation downwards
-    #{'strd':'RADLWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface thermal radiation downwards
-    #{'tp':'RR-M:ERA5D:5021:1:0:1'}, # Previous day sum Total precipitation
-    #{'ttr':'RTOPLWA-JM2:ERA5D:5021:1:0:1'}, # Previous day sum Top net thermal radiation
-    #{'fg10':'FFG-MS:ERA5D:5021:1:0:1'}, # Previous day maximum 10m wind gust since previous post-processing (24h aggregation: max value of previous day)
-    #{'mx2t':'TMAX-K:ERA5D:5021:1:0:1'}, # Previous day maximum Maximum temperature in the last 24h
-    #{'mn2t':'TMIN-K:ERA5D:5021:1:0:1'} # Previous day minimum Minimum temperature in the last 24h
+    {'strd':'RADLWA-JM2:ERA5D:5021:1:0:0'}, # Previous day sum Surface thermal radiation downwards
+    {'tp':'RR-M:ERA5D:5021:1:0:1'}, # Previous day sum Total precipitation
+    {'ttr':'RTOPLWA-JM2:ERA5D:5021:1:0:1'}, # Previous day sum Top net thermal radiation
+    {'fg10':'FFG-MS:ERA5D:5021:1:0:1'}, # Previous day maximum 10m wind gust since previous post-processing (24h aggregation: max value of previous day)
+    {'mx2t':'TMAX-K:ERA5D:5021:1:0:1'}, # Previous day maximum Maximum temperature in the last 24h
+    {'mn2t':'TMIN-K:ERA5D:5021:1:0:1'} # Previous day minimum Minimum temperature in the last 24h
 ]
 
 # 00 and 12 UTC predictors
 predictors_0012 = [
-    #{'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind (6h instantanous)
-    #{'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind (6h instantanous)
-    #{'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature (6h instantanous)
-    #{'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature (6h instantanous)
-    #{'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure (6h instantanous)
-    #{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature (6h instantanous)
-    #{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover (6h instantanous)
-    #{'kx': 'KX:ERA5:5021:1:0:0'}, # K index
-    #{'t850': 'T-K:ERA5:5021:2:850:1:0'}, # temperature in K, pressure levels 500-850 hPa       
-    #{'t700': 'T-K:ERA5:5021:2:700:1:0'},  
-    #{'t500': 'T-K:ERA5:5021:2:500:1:0'},
-    #{'q850': 'Q-KGKG:ERA5:5021:2:850:1:0'}, # specific humidity in kg/kg, pressure levels 500-850 hPa
-    #{'q700': 'Q-KGKG:ERA5:5021:2:700:1:0'},
-    #{'q500': 'Q-KGKG:ERA5:5021:2:500:1:0'},
-    #{'u850': 'U-MS:ERA5:5021:2:850:1:0'}, # U comp of wind in m/s, pressure levels 500-850 hPa
-    #{'u700': 'U-MS:ERA5:5021:2:700:1:0'},
-    #{'u500': 'U-MS:ERA5:5021:2:500:1:0'},
-    #{'v850': 'V-MS:ERA5:5021:2:850:1:0'}, # V comp of wind in m/s, pressure levels 500-850 hPa
-    #{'v700': 'V-MS:ERA5:5021:2:700:1:0'},
-    #{'v500': 'V-MS:ERA5:5021:2:500:1:0'},
-    #{'z850': 'Z-M2S2:ERA5:5021:2:850:1:0'}, # geopotential in m2 s-2, pressure levels 500-850 hPa
-    #{'z700': 'Z-M2S2:ERA5:5021:2:700:1:0'},
-    #{'z500': 'Z-M2S2:ERA5:5021:2:500:1:0'},   
+    {'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind (6h instantanous)
+    {'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind (6h instantanous)
+    {'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature (6h instantanous)
+    {'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature (6h instantanous)
+    {'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure (6h instantanous)
+    {'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature (6h instantanous)
+    {'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover (6h instantanous)
+    {'kx': 'KX:ERA5:5021:1:0:0'}, # K index
+    {'t850': 'T-K:ERA5:5021:2:850:1:0'}, # temperature in K, pressure levels 500-850 hPa       
+    {'t700': 'T-K:ERA5:5021:2:700:1:0'},  
+    {'t500': 'T-K:ERA5:5021:2:500:1:0'},
+    {'q850': 'Q-KGKG:ERA5:5021:2:850:1:0'}, # specific humidity in kg/kg, pressure levels 500-850 hPa
+    {'q700': 'Q-KGKG:ERA5:5021:2:700:1:0'},
+    {'q500': 'Q-KGKG:ERA5:5021:2:500:1:0'},
+    {'u850': 'U-MS:ERA5:5021:2:850:1:0'}, # U comp of wind in m/s, pressure levels 500-850 hPa
+    {'u700': 'U-MS:ERA5:5021:2:700:1:0'},
+    {'u500': 'U-MS:ERA5:5021:2:500:1:0'},
+    {'v850': 'V-MS:ERA5:5021:2:850:1:0'}, # V comp of wind in m/s, pressure levels 500-850 hPa
+    {'v700': 'V-MS:ERA5:5021:2:700:1:0'},
+    {'v500': 'V-MS:ERA5:5021:2:500:1:0'},
+    {'z850': 'Z-M2S2:ERA5:5021:2:850:1:0'}, # geopotential in m2 s-2, pressure levels 500-850 hPa
+    {'z700': 'Z-M2S2:ERA5:5021:2:700:1:0'},
+    {'z500': 'Z-M2S2:ERA5:5021:2:500:1:0'},   
 ]
 
 source='desm.harvesterseasons.com:8080' # server for timeseries query
