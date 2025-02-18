@@ -69,19 +69,22 @@ Predicting with the trained model happens with `run-xgb-predict-oceanids.sh`, an
 
 ## Tables of scripts and config files
 
+{loc}: name of the location (harbor)
+{name}: name of the ERA5/ERA5D parameter
+{pred}: name of the predictand
+
 |script|input|output|config input|config output|description|
 |:-|:-|:-|:-|:-|:-|
-|ts-obs-oceanids.py|location name|csv file for observations time series|harbors_config.json||ts query for station observations|
-|ts-era5-oceanids.py|location name|csv files for ERA5/ERA5D time series, bbox config file|harbors_config.json|{loc}_bbox_config.json|ts queries for ERA5/ERA5D data|
-|join-training-data.sh|location name|csv file for training data and obs|||Join all the data files into a single training data file for loc|
-|||||||
-|||||||
-|||||||
-|||||||
-|||||||
-|||||||
-|||||||
-
+|ts-obs-oceanids.py|location name|obs-oceanids-{loc}.csv|harbors_config.json||ts query for station observations|
+|ts-era5-oceanids.py|location name|era5_oceanids_{name}_{loc}.csv|harbors_config.json|{loc}_bbox_config.json|ts queries for ERA5/ERA5D data|
+|join-training-data.sh|location name|training_data_oceanids_{loc}-sf.csv|||Join all the data files into a single training data file for loc|
+|add-predictors-oceanids.py|training_data_oceanids_{loc}-sf.csv|training_data_oceanids_{loc}-sf-addpreds.csv, training_data_oceanids_{loc}-sf_2020-clim.csv||||
+|xgb-fit-KFold-era5-oceanids.py|training_data_oceanids_{loc}-sf-addpreds.csv|mdl_{loc}_{pred}_xgb_era5_oceanids-KFold-*.json|harbors_config.json, training_data_config.json|{loc}_{pred}_best_split.json||
+|xgb-fit-optuna-era5-oceanids.py||||||
+|xgb-fit-era5-oceanids.py||||||
+|xgb-analysis-shap-oceanids.py||||||
+|xgb-analysis-fscore-oceanids.py||||||
+|plot-era5-oceanids.py||||||
 
 ## Predictands
 

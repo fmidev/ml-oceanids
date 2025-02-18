@@ -33,7 +33,11 @@ def load_data(location):
         "Rauma": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Rauma.csv",
         "Vuosaari": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Vuosaari.csv"
     }
-    return pd.read_csv(location_files[location])
+    try:
+        return pd.read_csv(location_files[location])
+    except FileNotFoundError:
+        st.error(f"Data file for {location} not found.")
+        return pd.DataFrame()
 
 data = load_data(location)
 
