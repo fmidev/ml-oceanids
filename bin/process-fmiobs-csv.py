@@ -177,27 +177,26 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process FMI observations to daily values')
     parser.add_argument('--start-date', type=str, help='Start date in YYYY-MM-DD format')
     args = parser.parse_args()
-
-    name = sys.argv[1]
     
     # Convert files to daily values
     files = [
-        "/home/ubuntu/data/synop/fmisid115857_PraiaDaVittoria2012-2024_ws-wd-wg-rh_3h.csv",
-        "/home/ubuntu/data/synop/fmisid115857_PraiaDaVittoria2012-2024_tanx-pra_12h.csv"
+        "/home/ubuntu/data/synop/fmisid100839_AntwerpenStabroek_2015-2024_ws-wd-wg-rh_3h.csv",
+        "/home/ubuntu/data/synop/fmisid100839_AntwerpenStabroek_2015-2024_tanx-pra_12h.csv"
     ]
     
     # Process each file and merge
     daily_dfs = [convert_to_daily(f, start_date=args.start_date) for f in files]
     merged_df = merge_daily_files(daily_dfs)
-    merged_df["name"] = 'Lajes'
+    
     
     if merged_df is not None:
         # Standardize column names
+        merged_df["name"] = "Stabroek"
         merged_df = standardize_column_names(merged_df)
         
         # Get year range for filename
         year_range = f"{merged_df['utctime'].dt.year.min()}-{merged_df['utctime'].dt.year.max()}"
-        output_file = f"/home/ubuntu/data/ML/training-data/OCEANIDS/obs/obs_oceanids_PraiaDaVittoria_2012-2024.csv"
+        output_file = f"/home/ubuntu/data/ML/training-data/OCEANIDS/obs/obs-oceanids-Antwerpen.csv"
         merged_df.to_csv(output_file, index=False)
         print(merged_df.head())
         print(f"Saved daily observations to {output_file}")
