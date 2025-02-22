@@ -23,8 +23,16 @@ location = st.sidebar.selectbox(
     ["Vuosaari", "Bremerhaven", "Malaga", "Raahe", "Rauma"]  # Vuosaari first
 )
 
-# Load data based on location
-@st.cache_data
+# Display location image
+location_images = {
+    "Bremerhaven": "/home/ubuntu/data/ML/images/Bremerhaven_points.png",
+    "Malaga": "/home/ubuntu/data/ML/images/Malaga_points.png",
+    "Raahe": "/home/ubuntu/data/ML/images/Raahe_points.png",
+        "Malaga": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Malaga.csv", 
+        "Raahe": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Raahe.csv",
+        "Rauma": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Rauma.csv",
+        "Vuosaari": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Vuosaari.csv"
+    }
 def load_data(location):
     location_files = {
         "Bremerhaven": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Bremerhaven.csv",
@@ -38,6 +46,8 @@ def load_data(location):
     except FileNotFoundError:
         st.error(f"Data file for {location} not found.")
         return pd.DataFrame()
+
+data = load_data(location)
 
 data = load_data(location)
 

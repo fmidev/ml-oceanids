@@ -2,6 +2,7 @@
 
 harbor=$1
 predictand=$2
+cd /home/ubuntu/ml-oceanids/bin
 
 # Trainind data preprocessing
 ! [ -s /home/ubuntu/data/ML/training-data/OCEANIDS/${harbor}/training_data_oceanids_${harbor}-sf-addpreds.csv ] && ! [ -s /home/ubuntu/data/ML/training-data/OCEANIDS/${harbor}/training_data_oceanids_${harbor}-sf_2020-clim.csv ] && python ts-era5-oceanids.py $harbor && ./join-training-data.sh $harbor && python add-predictors-oceanids.py $harbor || echo "training data files already done"
