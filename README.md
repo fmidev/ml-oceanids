@@ -27,7 +27,7 @@ We use the GNU parallel: Tange, O., 2018. GNU Parallel 2018. Available at: https
 
 To train an XGBoost model, observational data is required as the predictand (target parameter) in fitting, such as wind gust, temperature or precipitation. We use ERA5 and ERA5D (daily statistics) reanalysis data and derived features as predictors (input variables): time series data from the four ERA5 grid points closest to the observation site is retrieved from our Smartmet-server at https://desm.harvesterseasons.com/grid-gui with its Timeseries API. Details of all the predictands and predictors available are provided in Tables 1, 2, and 3 at the end of this file.
 
-For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end (note: these should follow the Smartmet-server Timeseries query formatting). Output is a csv file for each parameter. Check the directory structures defined in the scripts.
+For training the model you will need a table of the predictand and all predictors in the nearest four grid points around chosen location for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get time series from ERA5 and ERA5D, and target parameter observations. To run the time series (ts) scripts, you will need to define `harbors_config.json` with name of location, corresponding latitude/longitude, and observation period start and end (note: these should follow the Smartmet-server Timeseries query formatting). You also need to define `predictand_mappings.json` config file with predictands, their corresponding predictors, and quantile alphas for fitting.
 
 You need to download the predictand data aka the observation time series for your selected location and save them in a csv file (file name should follow: `obs-oceanids-{harbor_name}.csv`). We run the `ts-obs-oceanids.py` script to ts query observations for Finnish stations but this needs fmi-apikey which is not shared outside organisation.
 
@@ -39,7 +39,7 @@ To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It
 
 To combine all predictor CSV files into a single training data input file, run the script `join-training-data.sh.` Example usage: `./join-training-data.sh Raahe`.
 
-To get the ERA5/ERA5D derived or other additional predictors, run `add-predictors-oceanids.py`. Example usage: `python add-predictors-oceanids.py Raahe`. Note that this script uses `predictand_mappings.json` config file. 
+To get the ERA5/ERA5D derived or other additional predictors, run `add-predictors-oceanids.py`. Example usage: `python add-predictors-oceanids.py Raahe`. 
 
 To plot the location and four nearest grid points on map, run `plot-era5-oceanids.py`. Example usage: `python plot-era5-oceanids.py Raahe`. 
 
