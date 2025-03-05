@@ -39,7 +39,7 @@ To download the ERA5 and ERA5D predictor data, run the `ts-era5-oceanids.py`. It
 
 To combine all predictor CSV files into a single training data input file, run the script `join-training-data.sh.` Example usage: `./join-training-data.sh Raahe`.
 
-To get the ERA5/ERA5D derived or other additional predictors, run `add-predictors-oceanids.py`. Example usage: `python add-predictors-oceanids.py Raahe`. 
+To get the ERA5/ERA5D derived or other additional predictors, run `add-predictors-oceanids.py`. Example usage: `python add-predictors-oceanids.py Raahe`. Note that this script uses `predictand_mappings.json` config file. 
 
 To plot the location and four nearest grid points on map, run `plot-era5-oceanids.py`. Example usage: `python plot-era5-oceanids.py Raahe`. 
 
