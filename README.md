@@ -97,12 +97,22 @@ predictand_mappings.json
 
 |Predictand|ML name|Data|Units|Description|
 |:-|:-|:-|:-|:-|
-|Daily greatest wind gust speed|WG_PT24H_MAX|WG_PT1H_MAX|m s-1|Previous day 24h maximum value from 1 hour greatest wind gust speed|
+|Daily greatest wind gust speed|WG_PT24H_MAX|WG_PT1H_MAX|m s-1|Previous day 24h maximum value from 1 hour greatest wind gust speeds|
+|Daily precipitation accumulation|TP_PT24H_SUM|PRAO_PT1H_ACC|mm|Previous day 24h accumulation from past 1 hour precipitation amounts|
+|Daily maximum air temperature|TA_PT24H_MAX|TA_PT1H_MAX|C|Previous day 24h maximum value from 1 hour maximum air temperature|
+|Daily minimum air temperature|TA_PT24H_MIN|TA_PT1H_MIN|C|Previous day 24h minimum value from 1 hour minimum air temperature|
+
+Table 1 Predictands used in this project, and observations they are derived from for Finnish harbors.
+
+|Predictand|ML name|Data|Units|Description|
+|:-|:-|:-|:-|:-|
+|Daily greatest wind gust speed|WG_PT24H_MAX||m s-1||
 ||TP_PT24H_SUM||||
 ||TX_PT24H_MAX||||
 ||TN_PT24H_MIN||||
 
-Table 1 Predictands used in this project.
+Table 2 Predictands used in this project, and observations they are derived from for non-Finnish harbors.
+
 
 ## Predictors ERA5, ERA5D and seasonal forecast
 
@@ -161,7 +171,7 @@ All available predictors listed in Tables 2 (training the model) and 3 (predicti
 |z700-00, z700-12|Geopotential at 700 hPa|m2 s-2|ERA5|0.25° x 0.25°|00 and 12 UTC|Z-M2S2|
 |z500-00, z500-12|Geopotential at 500 hPa|m2 s-2|ERA5|0.25° x 0.25°|00 and 12 UTC|Z-M2S2|
 
-Table 2 ERA5/ERA5D and derived predictors for training the models.
+Table 3 ERA5/ERA5D and derived predictors for training the models.
 ### Seasonal forecast and derived predictors 
 
 | Predictor | Units | Producer | Spatial resolution | ML Temporal resolution (available SF resolution) | ML name |
@@ -187,4 +197,4 @@ Table 2 ERA5/ERA5D and derived predictors for training the models.
 |Total column cloud liquid water|kg m-2|||00 UTC (24h instantaneous)|tlwc|
 |Total precipitation|m|||previous day 24h sums (24h aggregation since beginning of forecast)|tp|
 
-Table 3. Seasonal forecast and other predictors used in predicting target parameters. 
+Table 4 Seasonal forecast and other predictors used in predicting target parameters. 
