@@ -16,6 +16,12 @@ def convert_to_daily(csv_file, start_date=None, column_mapping=None, agg_rules=N
     """
     # Read CSV file
     df = pd.read_csv(csv_file)
+    if df.empty:
+        print("CSV file is empty")
+        return None
+    if 'lat' not in df.columns or 'lon' not in df.columns:
+        print("Columns 'lat' and/or 'lon' are missing in the CSV file")
+        return None
     df['time'] = pd.to_datetime(df['time'])
     
     # Store first row's lat/lon
@@ -189,12 +195,12 @@ if __name__ == "__main__":
     
     if merged_df is not None:
         # Standardize column names
-        merged_df["name"] = "Bremerhaven"
+        merged_df["name"] = "Plaisance"
         merged_df = standardize_column_names(merged_df)
         
         # Get year range for filename
         year_range = f"{merged_df['utctime'].dt.year.min()}-{merged_df['utctime'].dt.year.max()}"
-        output_file = f"/home/ubuntu/data/ML/training-data/OCEANIDS/obs/obs-oceanids-Bremerhaven.csv"
+        output_file = f"/home/ubuntu/data/ML/training-data/OCEANIDS/Plaisance/obs-oceanids-Plaisance.csv"
         merged_df.to_csv(output_file, index=False)
         print(merged_df.head())
         print(f"Saved daily observations to {output_file}")

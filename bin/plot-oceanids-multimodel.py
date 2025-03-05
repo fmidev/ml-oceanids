@@ -20,12 +20,12 @@ def extract_lat_lon_columns(df):
     lon_columns = sorted([col for col in df.columns if col.startswith("lon-")])
     return lat_columns, lon_columns
 
-def plot_harbor_points(csv_dir, output_file, loc):
+def plot_harbor_points(csv_dir, output_file, loc, harbor_coords=None):
     """Plots harbor prediction points from multiple CSVs, grouped by shared grids."""
     with open('harbors_config.json', 'r') as f:
         harbors = json.load(f)
-    harbor_lat = harbors[loc]['latitude']
-    harbor_lon = harbors[loc]['longitude']
+    station_lat = harbors[loc]['latitude']
+    station_lon = harbors[loc]['longitude']
     
     # Extract start and end years from config
     start_year = harbors[loc]['start'][:4]
@@ -59,19 +59,26 @@ def plot_harbor_points(csv_dir, output_file, loc):
     fig, ax = plt.subplots(figsize=(12, 8), 
                           subplot_kw={'projection': osm_tiles.crs})
     
-    # Set map extent (convert from degrees to OSM projection)
+    # Set map extent around the observation station
     ax.set_extent([
-        harbor_lon - 0.5, harbor_lon + 0.5,
-        harbor_lat - 0.25, harbor_lat + 0.25
+        station_lon - 0.5, station_lon + 0.5,
+        station_lat - 0.25, station_lat + 0.25
     ], crs=ccrs.PlateCarree())
     
     # Add OSM tiles
     ax.add_image(osm_tiles, 13)  # Zoom level 13 provides good detail
     
-    # Plot harbor location with transform
-    ax.plot(harbor_lon, harbor_lat, marker='*', color='red', 
-            markersize=15, label=f'{loc} Harbor', zorder=10,
+    # Plot observation station location
+    ax.plot(station_lon, station_lat, marker='*', color='red', 
+            markersize=15, label='Observation Station', zorder=10,
             transform=ccrs.PlateCarree())
+    
+    # Plot harbor location if coordinates are provided
+    if harbor_coords:
+        harbor_lon, harbor_lat = harbor_coords
+        ax.plot(harbor_lon, harbor_lat, marker='$\u2693$', color='darkred',  # Unicode anchor symbol
+                markersize=15, label='Harbor', zorder=10,
+                transform=ccrs.PlateCarree())
     
     # Adjust zorder to ensure visibility
     point_zorder = {
@@ -85,11 +92,13 @@ def plot_harbor_points(csv_dir, output_file, loc):
         models = model_groups[grid_name]
         try:
             if grid_name == 'sf':
-                pattern = f"{csv_dir}/training_data_oceanids_{loc}-sf_{start_year}-2023-WG_PT24H_MAX.csv"
+                pattern = f"{csv_dir}training_data_oceanids_{loc}-sf_*-WG_PT24H_MAX.csv"
             else:
-                pattern = f"{csv_dir}/training_data_oceanids_{models[0]}_{loc}_WG_PT24H_MAX_2006-{end_year}.csv"
+                pattern = f"{csv_dir}training_data_oceanids_{models[0]}_{loc}_WG_PT24H_MAX*.csv"
             
-            # Add debug print
+            # Add debug print for troubleshooting SF grid
+            print(f"Looking for file: {pattern}")
+            
             matching_files = glob.glob(pattern)
             if not matching_files:
                 raise FileNotFoundError(f"No files found matching pattern: {pattern}")
@@ -138,35 +147,52 @@ def plot_harbor_points(csv_dir, output_file, loc):
                                    linestyle=':', linewidth=2.5, zorder=4,
                                    transform=ccrs.PlateCarree())
             
-            # Plot points without white outline
+            # Plot points without white outline and fix legend markers
             for model in models:
                 if model == models[0]:
+                    # Use marker='o' to avoid the dash through symbols
                     ax.scatter(df[lon_cols], df[lat_cols], 
                              color=grid_colors[grid_name],
                              label=model, s=70, alpha=1.0,
+                             marker='o',  # Explicitly set marker
                              zorder=point_zorder[grid_name],
                              transform=ccrs.PlateCarree())
                 else:
                     # Add legend entry without plotting points
                     ax.scatter([], [], color=grid_colors[grid_name],
-                             label=model, s=70, alpha=1.0)
+                             label=model, s=70, alpha=1.0,
+                             marker='o')  # Match marker style
         
         except (FileNotFoundError, IndexError) as e:
-            print(f"Warning: Could not process grid {grid_name}")
+            print(f"Warning: Could not process grid {grid_name}: {str(e)}")
             continue
 
-    # Update legend title to remove grouping reference
+    # Update legend style to ensure clean markers
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc='upper left',
-             title='Models', frameon=True, framealpha=1)
+             title='Models', frameon=True, framealpha=1,
+             scatterpoints=1, # Use single point for legend
+             markerscale=1.5) # Adjust marker size in legend
     
     plt.title(f"Model grid points for {loc} Harbor")
     plt.savefig(output_file, bbox_inches='tight', dpi=300)
     plt.close()
 
-# Example usage:
-loc = sys.argv[1]
-csv_directory = "/home/ubuntu/data/ML/training-data/OCEANIDS/"  # Fixed absolute path
-output_file = f"../{loc}_points.png"  # Changed to relative path
+# Modified example usage:
+if len(sys.argv) < 2:
+    print("Usage: python plot-oceanids-multimodel.py <location> [harbor_lon harbor_lat]")
+    sys.exit(1)
 
-plot_harbor_points(csv_directory, output_file, loc)
+loc = sys.argv[1]
+harbor_coords = None
+if len(sys.argv) == 4:
+    try:
+        harbor_coords = (float(sys.argv[2]), float(sys.argv[3]))
+    except ValueError:
+        print("Error: Harbor coordinates must be valid numbers")
+        sys.exit(1)
+
+csv_directory = "/home/ubuntu/data/ML/training-data/OCEANIDS/"
+output_file = f"../{loc}_points.png"
+
+plot_harbor_points(csv_directory, output_file, loc, harbor_coords)

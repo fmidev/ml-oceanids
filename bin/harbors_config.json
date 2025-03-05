@@ -21,7 +21,7 @@
         "latitude": 53.53321,
         "longitude": 8.576089,
         "start":"20000101T000000Z",
-        "end":"20230831T000000Z"
+        "end":"20240831T000000Z"
     },
     "Malaga": {
         "latitude": 36.66611,
@@ -52,5 +52,17 @@
         "longitude": 4.3638902,
         "start":"20150210T000000Z",
         "end":"20250101T000000Z"
+    },
+    "Plaisance": {
+        "latitude": 48.038908,
+        "longitude": -4.7319398,
+        "start":"20121125T000000Z",
+        "end":"20240104T000000Z"
+    },
+    "Saint-Guenole": {
+        "latitude": 47.7975006,
+        "longitude": -4.3747201,
+        "start":"20121125T000000Z",
+        "end":"20240104T000000Z"
     }
   }

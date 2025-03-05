@@ -48,9 +48,10 @@ plt.scatter(lon3, lat3, transform=ccrs.PlateCarree(), color='blue', edgecolor='b
 plt.scatter(lon4, lat4, transform=ccrs.PlateCarree(), color='orange', edgecolor='black', s=50, label=f'4 ({lon4}, {lat4})')
 plt.scatter(longitude, latitude, transform=ccrs.PlateCarree(), color='red', edgecolor='black', s=75, label=f'obs ({round(longitude, 2)}, {round(latitude, 2)})')
 
-plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), facecolor="lightblue")
+# Replace the old legend placement with a lower right placement on top of the map:
+plt.legend(loc='lower right', bbox_to_anchor=(0.98, 0.02), facecolor="lightblue", framealpha=0.7)
 plt.title(f'{harbor_name}', fontsize=16)
 
 # Save plot with tight layout to reduce white space
 plt.tight_layout()
-plt.savefig(res_dir+res_file, dpi=200)
+plt.savefig(res_dir+res_file, dpi=200, bbox_inches='tight', pad_inches=0)

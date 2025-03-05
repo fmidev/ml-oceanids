@@ -4,11 +4,11 @@ import sys
 
 loc = sys.argv[1]
 preds = {
-    #'FG': 'WS_PT24H_AVG', 
+    'FG': 'WS_PT24H_AVG', 
     'RR': 'TP_PT24H_SUM',
     #'FX': 'WG_PT24H_MAX',
-    'TN': 'TN_PT24H_MIN',
-    'TX': 'TX_PT24H_MAX',
+    'TN': 'TA_PT24H_MIN',
+    'TX': 'TA_PT24H_MAX',
     # Add more predictors here as needed
 }
 id = sys.argv[2]

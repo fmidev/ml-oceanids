@@ -12,42 +12,64 @@ st.set_page_config(
     layout="wide"
 )
 
-# Add a title and description
-st.title("Wind Gust Analysis Dashboard")
-st.write("Analysis of wind gust forecasts for different locations")
-
-# Sidebar with location selector with Vuosaari as default
+# NEW: Define sidebar selectboxes only once with unique keys as needed
 st.sidebar.header("Settings")
+forecast_type = st.sidebar.selectbox(
+    "Select Forecast Type",
+    ["Wind Gust Max", "Max Temperature", "Min Temperature", "Total Precipitation"],
+    index=0,
+    key="forecast_type"
+)
 location = st.sidebar.selectbox(
     "Select Location",
-    ["Vuosaari", "Bremerhaven", "Malaga", "Raahe", "Rauma"]  # Vuosaari first
+    [ "Raahe", "Rauma", "Vuosaari", "Antwerpen", "Bremerhaven", "Malaga-Puerto", "PontaDelgada", "PraiaDaVittoria", "Saint-Guenole", "Plaisance" ],
+    key="location"
 )
+# Update: Default prediction month set to February (index 1)
+pred_month = st.sidebar.selectbox(
+    "Select Prediction Month",
+    ["January", "February"],
+    index=1,
+    key="pred_month"
+)
+month_code = "202501" if pred_month == "January" else "202502"
+
+# NEW: Display selected harbor plot in the sidebar using use_container_width
+harbor_plot = f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/{location}_training-locs.png"
+st.sidebar.markdown("### Harbor Plot")
+st.sidebar.image(harbor_plot, use_container_width=True)
+
+# Now that variables are defined, update title dynamically
+st.title(f"{forecast_type} Analysis Dashboard")
+st.write("Analysis of forecasts for different locations")
+
+# Compute month code based on selection
+month_code = "202501" if pred_month == "January" else "202502"
+
+forecast_map = {
+    "Wind Gust Max": "WG_PT24H_MAX",
+    "Max Temperature": "TA_PT24H_MAX",
+    "Min Temperature": "TA_PT24H_MIN",
+    "Total Precipitation": "TP_PT24H_ACC"
+}
+forecast_prefix = forecast_map[forecast_type]
 
 # Display location image
 location_images = {
-    "Bremerhaven": "/home/ubuntu/data/ML/images/Bremerhaven_points.png",
-    "Malaga": "/home/ubuntu/data/ML/images/Malaga_points.png",
-    "Raahe": "/home/ubuntu/data/ML/images/Raahe_points.png",
-        "Malaga": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Malaga.csv", 
-        "Raahe": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Raahe.csv",
-        "Rauma": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Rauma.csv",
-        "Vuosaari": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Vuosaari.csv"
+    "Bremerhaven": "/home/ubuntu/ml-oceanids/Bremerhaven_points.png",
+    "Malaga": "/home/ubuntu/ml-oceanids/Malaga_points.png",
+    "Raahe": "/home/ubuntu/ml-oceanids/Raahe_points.png",
+        "Rauma": "/home/ubuntu/ml-oceanids/Rauma.png",
+        "Vuosaari": "/home/ubuntu/ml-oceanids/Vuosaari_points.png"
     }
 def load_data(location):
-    location_files = {
-        "Bremerhaven": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Bremerhaven.csv",
-        "Malaga": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Malaga.csv", 
-        "Raahe": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Raahe.csv",
-        "Rauma": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Rauma.csv",
-        "Vuosaari": "/home/ubuntu/data/ML/ECXSF_202502_WG_PT24H_MAX_Vuosaari.csv"
-    }
+    # Dynamically build file path based on selected month, forecast type and location
+    file_path = f"/home/ubuntu/data/ML/ECXSF_{month_code}_{forecast_prefix}_{location}.csv"
     try:
-        return pd.read_csv(location_files[location])
+        return pd.read_csv(file_path)
     except FileNotFoundError:
-        st.error(f"Data file for {location} not found.")
+        st.error(f"Data file for {location} ({pred_month}) not found.")
         return pd.DataFrame()
-
-data = load_data(location)
 
 data = load_data(location)
 
@@ -61,32 +83,50 @@ else:
 st.subheader("Time Series Analysis")
 col1, col2 = st.columns(2)
 
+# After loading data, define forecast_columns using the selected prefix
+forecast_columns = [col for col in data.columns if col.startswith(f"{forecast_prefix}_")]
+
 with col1:
-    # Threshold analysis
+    # NEW: Set slider parameters and operator based on forecast type
+    if forecast_type == "Wind Gust Max":
+        threshold_text = "Wind Gust Threshold (m/s)"
+        slider_params = {"min_value": 0, "max_value": 30, "value": 15, "step": 1}
+        calc_operator = "above"
+        unit_text = "m/s"
+    elif forecast_type == "Max Temperature":
+        threshold_text = "Temperature Threshold (°C)"
+        slider_params = {"min_value": -30, "max_value": 50, "value": 20, "step": 1}
+        calc_operator = "above"
+        unit_text = "°C"
+    elif forecast_type == "Min Temperature":
+        threshold_text = "Temperature Threshold (°C)"
+        slider_params = {"min_value": -30, "max_value": 50, "value": 10, "step": 1}
+        calc_operator = "below"
+        unit_text = "°C"
+    elif forecast_type == "Total Precipitation":
+        threshold_text = "Precipitation Threshold (mm)"
+        slider_params = {"min_value": 0, "max_value": 100, "value": 50, "step": 1}
+        calc_operator = "above"
+        unit_text = "mm"
+    
     st.write("Threshold Analysis:")
-    threshold = st.slider("Wind Gust Threshold (m/s)", 
-                         min_value=0,  # min value
-                         max_value=30,  # max value
-                         value=15,      # default value
-                         step=1)        # integer steps
+    threshold = st.slider(threshold_text, **slider_params)
     
-    percentage_threshold = st.slider("Probability Threshold (%)", 
-                                   min_value=0,    # min value
-                                   max_value=100,  # max value
-                                   value=50,       # default value
-                                   step=1)         # integer steps
+    percentage_threshold = st.slider("Probability Threshold (%)", min_value=0, max_value=100, value=50, step=1)
     
-    # Calculate percentage of ensemble members above threshold for each timestamp
-    forecast_columns = [col for col in data.columns if 'WG_PT24H_MAX_' in col]
-    percentage_above = (data[forecast_columns] > threshold).mean(axis=1) * 100
+    if calc_operator == "above":
+        percentage_above = (data[forecast_columns] > threshold).mean(axis=1) * 100
+        line_label = f"% Above {threshold} {unit_text}"
+    else:
+        percentage_above = (data[forecast_columns] < threshold).mean(axis=1) * 100
+        line_label = f"% Below {threshold} {unit_text}"
     
-    # Plot percentage time series
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(data['utctime'], percentage_above, 'r-', label=f'% Above {threshold} m/s')
+    ax.plot(data['utctime'], percentage_above, 'r-', label=line_label)
     ax.axhline(y=percentage_threshold, color='b', linestyle='--', label=f'{percentage_threshold}% Threshold')
     ax.set_xlabel('Date')
     ax.set_ylabel('Percentage of Ensemble Members (%)')
-    ax.set_title(f'Percentage of Ensemble Members Above {threshold} m/s')
+    ax.set_title(f'Percentage of Ensemble Members {"Above" if calc_operator=="above" else "Below"} {threshold} {unit_text}')
     ax.legend()
     plt.xticks(rotation=45)
     plt.tight_layout()
@@ -141,17 +181,27 @@ with col2:
     high_risk_days = percentage_stats[percentage_stats['Percentage_Above'] > percentage_threshold]
     
     if not high_risk_days.empty:
-        st.write(f"Days with >{percentage_threshold}% members above {threshold} m/s:")
+        if calc_operator == "above":
+            st.write(f"Days with >{percentage_threshold}% members above {threshold} {unit_text}:")
+        else:
+            st.write(f"Days with >{percentage_threshold}% members below {threshold} {unit_text}:")
         st.write(high_risk_days)
     else:
-        st.write(f"No days with more than {percentage_threshold}% members above {percentage_threshold} m/s")
+        st.write(f"No days with more than {percentage_threshold}% members " +
+                 (f"above {threshold} {unit_text}" if calc_operator=="above" else f"below {threshold} {unit_text}"))
 
 # Load training data before statistical analysis with error handling
 @st.cache_data
 def load_training_data(location):
     location_files = {
+        "Antwerpen": "/home/ubuntu/data/ML/training-data/OCEANIDS/Antwerpen/training_data_oceanids_Antwerpen-sf-addpreds.csv",
         "Bremerhaven": "/home/ubuntu/data/ML/training-data/OCEANIDS/Bremerhaven/training_data_oceanids_Bremerhaven-sf-addpreds.csv",
         "Malaga": "/home/ubuntu/data/ML/training-data/OCEANIDS/Malaga/training_data_oceanids_Malaga-sf-addpreds.csv",
+        "Malaga-Puerto": "/home/ubuntu/data/ML/training-data/OCEANIDS/Malaga-Puerto/training_data_oceanids_Malaga-Puerto-sf-addpreds.csv",
+        "PraiaDaVittoria": "/home/ubuntu/data/ML/training-data/OCEANIDS/PraiaDaVittoria/training_data_oceanids_PraiaDaVittoria-sf-addpreds.csv",
+        "PontaDelgada": "/home/ubuntu/data/ML/training-data/OCEANIDS/PontaDelgada/training_data_oceanids_PontaDelgada-sf-addpreds.csv",
+        "Plaisance": "/home/ubuntu/data/ML/training-data/OCEANIDS/Plaisance/training_data_oceanids_Plaisance-sf-addpreds.csv",
+        "Saint-Guenole": "/home/ubuntu/data/ML/training-data/OCEANIDS/Saint-Guenole/training_data_oceanids_Saint-Guenole-sf-addpreds.csv",
         "Raahe": "/home/ubuntu/data/ML/training-data/OCEANIDS/Raahe/training_data_oceanids_Raahe-sf-addpreds.csv", 
         "Rauma": "/home/ubuntu/data/ML/training-data/OCEANIDS/Rauma/training_data_oceanids_Rauma-sf-addpreds.csv",
         "Vuosaari": "/home/ubuntu/data/ML/training-data/OCEANIDS/Vuosaari/training_data_oceanids_Vuosaari-sf-addpreds.csv"
@@ -182,29 +232,23 @@ for col in forecast_columns:
 
 # Add observations distribution if available
 if has_observations:
-    sns.kdeplot(data=train_data, x='WG_PT24H_MAX', label='Historical Observations', 
-                color='red', linestyle='--', linewidth=2, ax=ax)
+    if train_data[forecast_prefix].dropna().empty:
+        st.write("Training data forecast column has only missing values. Distribution cannot be plotted.")
+    else:
+        sns.kdeplot(data=train_data, x=forecast_prefix, label='Historical Observations', 
+                    color='red', linestyle='--', linewidth=2, ax=ax)
 
-ax.set_xlabel('Wind Gust Speed (m/s)')
+ax.set_xlabel(f"{forecast_type} Forecast")
 ax.set_ylabel('Density')
-ax.set_title('Distribution of Ensemble Members' + 
-            (' vs Historical Observations' if has_observations else ''))
-ax.set_xlim(0, 30)
+if forecast_type == "Wind Gust Max":
+    ax.set_title('Distribution of Ensemble Members vs Historical Observations' if has_observations else 'Distribution of Ensemble Members')
+    ax.set_xlim(0, 30)
+else:
+    ax.set_title(f'Distribution of Ensemble {forecast_type} Forecasts' + (' vs Historical Observations' if has_observations else ''))
 ax.legend()
 
 plt.tight_layout()
 st.pyplot(fig)
-
-# Add Training Data Analysis section only if data is available
-if has_observations:
-    st.subheader("Training Data Analysis")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.image(f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/fscore_{location}_xgb_era5_oceanids-QE.png")
-    with col2:
-        st.image(f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/shap_{location}_xgb_era5_oceanids-QE.png")
-else:
-    st.info("Training data analysis not available for this location")
 
 # Add interactive data table
 st.subheader("Raw Data")
@@ -225,7 +269,7 @@ ax.plot(data['utctime'], data['ensemble_mean'], 'r-',
         linewidth=2, label='Ensemble Mean')
 
 ax.set_xlabel('Date')
-ax.set_ylabel('Wind Gust (m/s)')
+ax.set_ylabel(f"{forecast_type} Forecast")
 ax.set_title('All Ensemble Members Over Time')
 ax.legend()
 plt.xticks(rotation=45)
@@ -245,6 +289,17 @@ plt.title('Heatmap of Ensemble Members')
 plt.tight_layout()
 st.pyplot(fig)
 
+# NEW: Training Data Analysis section relocated below the heatmap
+if has_observations:
+    st.subheader("Training Data Analysis")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image(f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/fscore_{location}_{forecast_prefix}_xgb_era5_oceanids-QE.png")
+    with col2:
+        st.image(f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/shap_{location}_{forecast_prefix}_xgb_era5_oceanids-QE.png")
+else:
+    st.info("Training data analysis not available for this location")
+    
 # Footer
 st.markdown("---")
 st.markdown("Wind Gust Analysis Tool - Built with Streamlit ❤️")

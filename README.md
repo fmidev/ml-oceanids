@@ -67,8 +67,9 @@ Scripts for predicting target parameters can be found from https://github.com/fm
 
 Predicting with the trained model happens with `run-xgb-predict-oceanids.sh`, and `xgb-predict-oceanids.py`, with input gribs remapped to ERA5 grid and selecting the four grid points used in training. The Python script uses Xarray to join different input grids into one data frame that includes all time steps for each input in the target grid. Then prediction for target parameter is made with XGBoost predict with the previously trained model. Ready csv file is then returned to the bash script that combines the results for all the 51 ensemble members to a single csv output file. 
 
-## Tables of scripts and config files
+## Lists of scripts and config files
 
+<!--
 {loc}: name of the location (harbor)
 {name}: name of the ERA5/ERA5D parameter
 {pred}: name of the predictand
@@ -85,6 +86,7 @@ Predicting with the trained model happens with `run-xgb-predict-oceanids.sh`, an
 |xgb-analysis-shap-oceanids.py||||||
 |xgb-analysis-fscore-oceanids.py||||||
 |plot-era5-oceanids.py||||||
+-->
 
 ## Predictands
 
