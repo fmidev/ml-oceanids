@@ -69,6 +69,11 @@ Predicting with the trained model happens with `run-xgb-predict-oceanids.sh`, an
 
 ## Lists of scripts and config files
 
+harbors_config.json
+training_data_config.json
+predictand_mappings.json
+
+
 <!--
 {loc}: name of the location (harbor)
 {name}: name of the ERA5/ERA5D parameter
