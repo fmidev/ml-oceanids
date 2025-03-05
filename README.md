@@ -108,8 +108,8 @@ Table 1 Predictands used in this project, and observations they are derived from
 |:-|:-|:-|:-|:-|
 |Daily greatest wind gust speed|WG_PT24H_MAX||m s-1||
 ||TP_PT24H_SUM||||
-||TX_PT24H_MAX||||
-||TN_PT24H_MIN||||
+||TA_PT24H_MAX||||
+||TA_PT24H_MIN||||
 
 Table 2 Predictands used in this project, and observations they are derived from for non-Finnish harbors.
 
