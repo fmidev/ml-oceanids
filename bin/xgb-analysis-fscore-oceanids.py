@@ -28,7 +28,7 @@ selected_value = predictand_mappings[pred]
 keys_to_drop = [key for key in predictand_mappings if key != pred]
 values_to_drop = [val for key, val in predictand_mappings.items() if key != pred]
 
-# Load training data config file
+# training data config file
 with open(f'training_data_config.json', 'r') as file:
     config = commentjson.load(file) # commentjson to allow comments syntax in json files
 columns = config['training_columns']

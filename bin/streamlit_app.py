@@ -214,6 +214,22 @@ def load_training_data(location):
 train_data = load_training_data(location)
 has_observations = train_data is not None
 
+# NEW: Convert training grid-point temperatures from Kelvin to Celsius for temperature forecasts
+if has_observations and forecast_type in ["Max Temperature", "Min Temperature"]:
+    training_prefix = "mx2t-" if forecast_type == "Max Temperature" else "mn2t-"
+    for i in range(1, 5):
+        col_name = f"{training_prefix}{i}"
+        if col_name in train_data.columns:
+            train_data[col_name] = train_data[col_name] - 273.15
+
+# NEW: Convert training grid-point total precipitation from meters to millimeters for Total Precipitation forecast
+if has_observations and forecast_type == "Total Precipitation":
+    training_prefix = "tp-"
+    for i in range(1, 5):
+        col_name = f"{training_prefix}{i}"
+        if col_name in train_data.columns:
+            train_data[col_name] = train_data[col_name] * 1000
+
 # Statistical Analysis
 st.subheader("Statistical Analysis of Seasonal and Historical Data")
 
@@ -230,13 +246,27 @@ for col in forecast_columns:
         color = 'gray'
         sns.kdeplot(data=data, x=col, linewidth=0.5, alpha=0.3, color=color, ax=ax)
 
-# Add observations distribution if available
+# Add historical observations distribution if available
 if has_observations:
     if train_data[forecast_prefix].dropna().empty:
         st.write("Training data forecast column has only missing values. Distribution cannot be plotted.")
     else:
         sns.kdeplot(data=train_data, x=forecast_prefix, label='Historical Observations', 
                     color='red', linestyle='--', linewidth=2, ax=ax)
+        
+    # NEW: Plot training grid-point distributions from the training_data file.
+    if forecast_type == "Wind Gust Max":
+        training_prefix = "fg10-"
+    elif forecast_type == "Max Temperature":
+        training_prefix = "mx2t-"
+    elif forecast_type == "Min Temperature":
+        training_prefix = "mn2t-"
+    elif forecast_type == "Total Precipitation":
+        training_prefix = "tp-"
+    training_cols = [f"{training_prefix}{i}" for i in range(1,5)]
+    for col in training_cols:
+        if col in train_data.columns:
+            sns.kdeplot(data=train_data, x=col, label=f'Training {col}', linestyle=':', linewidth=1.5, ax=ax)
 
 ax.set_xlabel(f"{forecast_type} Forecast")
 ax.set_ylabel('Density')
