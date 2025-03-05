@@ -1,17 +1,17 @@
 import pandas as pd
-import sys,json
+import sys, json
 # Script to add predictors to the training dataset for OCEANIDS
 # (AK 2025)
 
-harbor_name=sys.argv[1]
+harbor_name = sys.argv[1]
 
-data_dir=f'/home/ubuntu/data/ML/training-data/OCEANIDS/{harbor_name}/'
-fname=f'training_data_oceanids_{harbor_name}-sf.csv'
-output_file=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv'
-df=pd.read_csv(data_dir+fname)#,usecols=cols_own)
+data_dir = f'/home/ubuntu/data/ML/training-data/OCEANIDS/{harbor_name}/'
+fname = f'training_data_oceanids_{harbor_name}-sf.csv'
+output_file = f'training_data_oceanids_{harbor_name}-sf-addpreds.csv'
+df = pd.read_csv(data_dir+fname)
 
 # add day of year and hour of day as columns
-df['utctime']=pd.to_datetime(df['utctime'])
+df['utctime'] = pd.to_datetime(df['utctime'])
 df['dayOfYear'] = df['utctime'].dt.dayofyear
 df['year'] = df['utctime'].dt.year
 df['month'] = df['utctime'].dt.month
@@ -22,31 +22,28 @@ for i in range(1, 5):  # For columns 1 to 4
     df[f'Dmsl-00-{i}'] = df[f'msl-00-{i}'].diff()
     df[f'Dmsl-12-{i}'] = df[f'msl-12-{i}'].diff()
 
-# Define the predictand mappings
-predictand_mappings={
-    'WG_PT24H_MAX': 'fg10',
-    'TA_PT24H_MAX': 'mx2t',
-    'TA_PT24H_MIN': 'mn2t',
-    'TP_PT24H_ACC': 'tp'
-    }
+# predictand mappings from JSON file
+with open('predictand_mappings.json', 'r') as f:
+    predictand_mappings = json.load(f)
 
-# Initialize df_2020 to store climatology results for the year 2020
+# Initialize climatology DataFrame for 2020
 df_2020_combined = df[df['year'] == 2020][['utctime', 'month']].copy()
 
-for predictand, variable_prefix in predictand_mappings.items():
+for predictand, mapping in predictand_mappings.items():
+    variable_prefix = mapping["parameter"]
     df[f'{variable_prefix}_sum'] = df[[f'{variable_prefix}-1', f'{variable_prefix}-2', f'{variable_prefix}-3', f'{variable_prefix}-4']].sum(axis=1) / 4
     # Group by year and month and calculate the average, minimum, and maximum for each month
     monthly_stats = df.groupby(['year', 'month']).agg({
-            f'{variable_prefix}_sum': ['mean', 'min', 'max'],
-            predictand: ['mean', 'min', 'max']
-        })
+        f'{variable_prefix}_sum': ['mean', 'min', 'max'],
+        predictand: ['mean', 'min', 'max']
+    })
     monthly_stats.columns = ['_'.join(col).strip() for col in monthly_stats.columns.values]
     monthly_stats.reset_index(inplace=True)
     # Calculate the difference between the summed variable and the predictor
     monthly_stats[f'{variable_prefix}_{predictand}_diff_mean'] = monthly_stats[f'{variable_prefix}_sum_mean'] - monthly_stats[f'{predictand}_mean']
     monthly_stats[f'{variable_prefix}_{predictand}_diff_min'] = monthly_stats[f'{variable_prefix}_sum_min'] - monthly_stats[f'{predictand}_min']
     monthly_stats[f'{variable_prefix}_{predictand}_diff_max'] = monthly_stats[f'{variable_prefix}_sum_max'] - monthly_stats[f'{predictand}_max']
-    df=df.merge(monthly_stats, on=['year', 'month'], how='left')
+    df = df.merge(monthly_stats, on=['year', 'month'], how='left')
 
     # Climatology file for SF prediction
     # Group by 'month' and calculate climatology (mean) for the specified columns
@@ -65,9 +62,6 @@ for predictand, variable_prefix in predictand_mappings.items():
     df_2020 = df_2020[['utctime', f'{predictand}_mean_climatology', f'{predictand}_max_climatology', f'{predictand}_min_climatology']]
     df_2020_combined = df_2020_combined.merge(df_2020, on='utctime', how='left')
 df_2020_combined.drop(columns=['month'], inplace=True)
-
-#print(df_2020_combined)
-#print(df)
 
 df.to_csv(f'{data_dir}{output_file}', index=False)
 df_2020_combined.to_csv(f'{data_dir}training_data_oceanids_{harbor_name}-sf_2020-clim.csv', index=False)

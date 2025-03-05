@@ -42,13 +42,11 @@ with open(f'{mod_dir}{harbor_name}_{pred}_best_split.json', 'r') as file3:
 test_y=yconfig.get('test_years')
 train_y=yconfig.get('train_years')
 
-# Define the predictand mappings
-predictand_mappings={
-    'WG_PT24H_MAX': 'fg10',
-    'TA_PT24H_MAX': 'mx2t',
-    'TA_PT24H_MIN': 'mn2t',
-    'TP_PT24H_ACC': 'tp'
-    }
+# predictand mappings from JSON file
+with open('predictand_mappings.json', 'r') as f:
+    mappings = json.load(f)
+predictand_mappings = { key: mappings[key]["parameter"] for key in mappings }
+
 selected_value = predictand_mappings[pred]
 keys_to_drop = [key for key in predictand_mappings if key != pred]
 values_to_drop = [val for key, val in predictand_mappings.items() if key != pred]

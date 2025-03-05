@@ -1,0 +1,18 @@
+{
+  "WG_PT24H_MAX": {
+    "parameter": "fg10",
+    "quantile_alpha": 0.95
+  },
+  "TA_PT24H_MAX": {
+    "parameter": "mx2t",
+    "quantile_alpha": 0.95
+  },
+  "TA_PT24H_MIN": {
+    "parameter": "mn2t",
+    "quantile_alpha": 0.05
+  },
+  "TP_PT24H_ACC": {
+    "parameter": "tp",
+    "quantile_alpha": 0.95
+  }
+}

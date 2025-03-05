@@ -31,14 +31,11 @@ fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv'
 mod_name=f'mdl_{harbor_name}_{pred}_xgb_era5_oceanids-KFold'
 best_split_file = f'{harbor_name}_{pred}_best_split.json'
 
-### Read in 2D tabular training data
-# Define the predictand mappings
-predictand_mappings={
-    'WG_PT24H_MAX': 'fg10',
-    'TA_PT24H_MAX': 'mx2t',
-    'TA_PT24H_MIN': 'mn2t',
-    'TP_PT24H_ACC': 'tp'
-    }
+# predictand mappings from JSON file and extract the parameter values
+with open('predictand_mappings.json', 'r') as f:
+    mappings = json.load(f)
+predictand_mappings = { key: mapping["parameter"] for key, mapping in mappings.items() }
+
 selected_value = predictand_mappings[pred]
 keys_to_drop = [key for key in predictand_mappings if key != pred]
 values_to_drop = [val for key, val in predictand_mappings.items() if key != pred]

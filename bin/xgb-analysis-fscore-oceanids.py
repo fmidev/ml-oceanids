@@ -19,13 +19,11 @@ if not os.path.exists(res_dir):
 mod_name=f'mdl_{harbor_name}_{pred}_xgb_era5_oceanids-QE.json'
 fscorepic=f'fscore_{harbor_name}_{pred}_xgb_era5_oceanids-QE.png'
 
-# Define the predictand mappings
-predictand_mappings={
-    'WG_PT24H_MAX': 'fg10',
-    'TA_PT24H_MAX': 'mx2t',
-    'TA_PT24H_MIN': 'mn2t',
-    'TP_PT24H_ACC': 'tp'
-    }
+# predictand mappings from JSON file
+with open('predictand_mappings.json', 'r') as f:
+    mappings = json.load(f)
+predictand_mappings = { key: mappings[key]["parameter"] for key in mappings }
+
 selected_value = predictand_mappings[pred]
 keys_to_drop = [key for key in predictand_mappings if key != pred]
 values_to_drop = [val for key, val in predictand_mappings.items() if key != pred]
