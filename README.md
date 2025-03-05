@@ -50,7 +50,7 @@ Figure 1 Example: Training locations 1 to 4, along with the Raahe observation si
 
 If you run fit-era5-oceanids.sh (Option 1), these steps are included already. If you choose to run them manually, follow instructions here.
 
-These scripts use config files `harbors_config.json` and `training_data_config.json` where latter defines the column headers for predictors used in training the model. Also, KFold run creates location-specific config files for best train/validation dataset split (by years) and Optuna run creates location-specific config files for hyperparameters.
+These scripts use config files `harbors_config.json` (location name, latitude, longitude, start and end of timeseries), `predictand_mappings.json` (predictands, their corresponding predictors, quantile alphas), and `training_data_config.json` (the column headers for predictors used in fitting). Also, KFold run creates location-specific config files for best train/validation dataset split (by years) and Optuna run creates location-specific config files for hyperparameters.
 
 First, to perform the K-Fold cross-validation (split input dataset to optimal training and testing sets by years), run `xgb-fit-KFold-era5-oceanids.py`. Result is printed to terminal and best split is written to location specific config file. Example usage: `python xgb-fit-KFold-era5-oceanids.py Raahe WG_PT24H_MAX`. 
 
