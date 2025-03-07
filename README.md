@@ -106,13 +106,12 @@ Table 1 Predictands used in this project, and observations they are derived from
 
 |Predictand|ML name|Data|Units|Description|
 |:-|:-|:-|:-|:-|
-|Daily greatest wind gust speed|WG_PT24H_MAX||m s-1||
-||TP_PT24H_SUM||||
-||TA_PT24H_MAX||||
-||TA_PT24H_MIN||||
+|Daily greatest wind gust speed|WG_PT24H_MAX||0.1 m/s||
+|Daily precipitation accumulation|TP_PT24H_ACC||0.1 mm||
+|Daily maximum air temperature|TA_PT24H_MAX||||
+|Daily minimum air temperature|TA_PT24H_MIN||||
 
 Table 2 Predictands used in this project, and observations they are derived from for non-Finnish harbors.
-
 
 ## Predictors ERA5, ERA5D and seasonal forecast
 

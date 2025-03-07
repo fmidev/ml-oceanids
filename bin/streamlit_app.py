@@ -73,11 +73,12 @@ def load_data(location):
 
 data = load_data(location)
 
-# Ensure 'utctime' exists before converting to datetime
+# NEW: Check for the 'utctime' column. If missing, notify the user and stop execution.
 if 'utctime' in data.columns:
     data['utctime'] = pd.to_datetime(data['utctime'])
 else:
-    print("Column 'utctime' does not exist in the DataFrame")
+    st.error("The required 'utctime' column is missing in the loaded data. Please check your data source.")
+    st.stop()
 
 # Time series analysis at the top
 st.subheader("Time Series Analysis")
@@ -319,14 +320,16 @@ plt.title('Heatmap of Ensemble Members')
 plt.tight_layout()
 st.pyplot(fig)
 
-# NEW: Training Data Analysis section relocated below the heatmap
+# NEW: In the Training Data Analysis section, update to three columns for fscore, shap, and beeswarm images
 if has_observations:
     st.subheader("Training Data Analysis")
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.image(f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/fscore_{location}_{forecast_prefix}_xgb_era5_oceanids-QE.png")
     with col2:
         st.image(f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/shap_{location}_{forecast_prefix}_xgb_era5_oceanids-QE.png")
+    with col3:
+        st.image(f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/beeswarm_{location}_{forecast_prefix}_xgb_era5_oceanids-QE.png")
 else:
     st.info("Training data analysis not available for this location")
     

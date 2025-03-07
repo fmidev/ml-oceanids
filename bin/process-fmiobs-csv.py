@@ -182,8 +182,12 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Process FMI observations to daily values')
     parser.add_argument('--start-date', type=str, help='Start date in YYYY-MM-DD format')
+    # NEW: Add harbour name argument
+    parser.add_argument('--harbour', type=str, default="Plaisance", help='Name of the harbour')
     parser.add_argument('input_files', nargs='+', help='List of CSV files to process')
     args = parser.parse_args()
+    
+    harbour_name = args.harbour  # NEW: Read harbour name
     
     # Replace hard-coded files list with command line arguments
     files = args.input_files
@@ -194,13 +198,14 @@ if __name__ == "__main__":
     
     
     if merged_df is not None:
-        # Standardize column names
-        merged_df["name"] = "Plaisance"
+        # Standardize column names and update harbour name dynamically
+        merged_df["name"] = harbour_name  # UPDATED: Use command line harbour name
         merged_df = standardize_column_names(merged_df)
         
         # Get year range for filename
         year_range = f"{merged_df['utctime'].dt.year.min()}-{merged_df['utctime'].dt.year.max()}"
-        output_file = f"/home/ubuntu/data/ML/training-data/OCEANIDS/Plaisance/obs-oceanids-Plaisance.csv"
+        # UPDATED: Use harbour name in the output file path
+        output_file = f"/home/ubuntu/data/ML/training-data/OCEANIDS/{harbour_name}/obs-oceanids-{harbour_name}.csv"
         merged_df.to_csv(output_file, index=False)
         print(merged_df.head())
         print(f"Saved daily observations to {output_file}")

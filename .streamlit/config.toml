@@ -1,0 +1,5 @@
+[server]
+headless = true
+#enableCORS = false            # Disable CORS check if using a proxy
+#enableWebsocketCompression = false  # Disable WS compression to improve compatibility
+#enableXsrfProtection = false

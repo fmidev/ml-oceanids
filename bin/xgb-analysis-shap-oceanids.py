@@ -107,6 +107,15 @@ plt.savefig(res_dir+shappic, dpi=200)
 plt.clf()
 plt.close('all')
 
+# NEW: Generate and save beeswarm plot with updated filename
+beeswarm_pic = f'beeswarm_{harbor_name}_{pred}_xgb_era5_oceanids-QE.png'
+plt.figure(figsize=(30, 10))
+shap.summary_plot(shap_values_val, X_val, max_display=len(preds_headers), show=False)
+plt.tight_layout()
+plt.savefig(res_dir + beeswarm_pic, dpi=200)
+plt.clf()
+plt.close('all')
+
 #######################
 # SHAP Analysis
 '''training_data_file = data_dir+fname
