@@ -60,9 +60,9 @@ elif pred == 'TX_PT24H_MAX':
     df_result["tasmax_sum_max"] = df_fin["tasmax_sum_max"] - 273.15
     df_result["tasmax_sum_min"] = df_fin["tasmax_sum_min"] - 273.15
 elif pred == 'TP_PT24H_SUM':
-    df_result["pr_sum_mean"] = df_fin["pr_sum_mean"] * 68400
-    df_result["pr_sum_max"] = df_fin["pr_sum_max"] * 68400
-    df_result["pr_sum_min"] = df_fin["pr_sum_min"] * 68400
+    df_result["pr_sum_mean"] = df_fin["pr_sum_mean"] * 86400
+    df_result["pr_sum_max"] = df_fin["pr_sum_max"] * 86400
+    df_result["pr_sum_min"] = df_fin["pr_sum_min"] * 86400
 else:
     raise ValueError("Invalid predictor")
     

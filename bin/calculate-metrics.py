@@ -3,16 +3,17 @@ import sklearn.metrics
 import sys
 import os
 
-file_path = sys.argv[1]
+file_name = sys.argv[1]
+
+dir = '/home/ubuntu/data/ML/results/OCEANIDS/cordex/'
 
 # Extract model name, prediction type, and location from the file name
-file_name = os.path.basename(file_path)
 parts = file_name.split('-')
 model = parts[1]+'-'+parts[2]
 pred = parts[4]
 location = parts[3]
 
-data = pd.read_csv(file_path)
+data = pd.read_csv(dir+file_name)
 data = data.dropna()
 
 # Calculate the errors
