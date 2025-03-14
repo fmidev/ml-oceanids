@@ -5,6 +5,9 @@
     "TA_PT24H_MAX",
     "TA_PT24H_MIN",
     "TP_PT24H_ACC",
+    "RH_PT24H_AVG",
+    "WS_PT24H_AVG",
+    "WD_PT24H_AVG",
     #"lat-1", "lon-1","lat-2", "lon-2", "lat-3", "lon-3", "lat-4", "lon-4",
     #"anor-1","anor-2", "anor-3", "anor-4",
     #"z-1", "z-2", "z-3", "z-4",
@@ -96,6 +99,18 @@
     "tp_sum", "tp_sum_mean", "tp_sum_min", "tp_sum_max",
     "TP_PT24H_ACC_mean", "TP_PT24H_ACC_min","TP_PT24H_ACC_max", 
     #"tp_TP_PT24H_ACC_diff_mean", "tp_TP_PT24H_ACC_diff_min", "tp_TP_PT24H_ACC_diff_max",
-    #"TP_PT24H_ACC_mean_climatology", "TP_PT24H_ACC_max_climatology", "TP_PT24H_ACC_min_climatology"
+    #"TP_PT24H_ACC_mean_climatology", "TP_PT24H_ACC_max_climatology", "TP_PT24H_ACC_min_climatology",
+    "rh_sum", "rh_sum_mean", "rh_sum_min", "rh_sum_max",
+    "RH_PT24H_AVG_mean", "RH_PT24H_AVG_min", "RH_PT24H_AVG_max",
+    #"rh_RH_PT24H_AVG_diff_mean", "rh_RH_PT24H_AVG_diff_min", "rh_RH_PT24H_AVG_diff_max",
+    #"RH_PT24H_AVG_mean_climatology", "RH_PT24H_AVG_max_climatology", "RH_PT24H_AVG_min_climatology",
+    "ws_sum", "ws_sum_mean", "ws_sum_min", "ws_sum_max",
+    "WS_PT24H_AVG_mean", "WS_PT24H_AVG_min", "WS_PT24H_AVG_max",
+    #"ws_WS_PT24H_AVG_diff_mean", "ws_WS_PT24H_AVG_diff_min", "ws_WS_PT24H_AVG_diff_max",
+    #"WS_PT24H_AVG_mean_climatology", "WS_PT24H_AVG_max_climatology", "WS_PT24H_AVG_min_climatology",
+    "wd_sum", "wd_sum_mean", "wd_sum_min", "wd_sum_max",
+    "WD_PT24H_AVG_mean", "WD_PT24H_AVG_min", "WD_PT24H_AVG_max",
+    #"wd_WD_PT24H_AVG_diff_mean", "wd_WD_PT24H_AVG_diff_min", "wd_WD_PT24H_AVG_diff_max",
+    #"WD_PT24H_AVG_mean_climatology", "WD_PT24H_AVG_max_climatology", "WD_PT24H_AVG_min_climatology"
 ]   
 }

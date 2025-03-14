@@ -14,5 +14,17 @@
   "TP_PT24H_ACC": {
     "parameter": "tp",
     "quantile_alpha": 0.95
+  },
+  "RH_PT24H_AVG": {
+    "parameter": "rh",
+    "quantile_alpha": 0.95
+  },
+  "WS_PT24H_AVG": {
+    "parameter": "ws",
+    "quantile_alpha": 0.95
+  },
+  "WD_PT24H_AVG": {
+    "parameter": "wd",
+    "quantile_alpha": 0.95
   }
 }
