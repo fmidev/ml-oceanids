@@ -55,7 +55,11 @@ def convert_to_daily(csv_file, start_date=None, column_mapping=None, agg_rules=N
             'TA_PT12H_MAX': 'TX',  # Max temperature
             'PRA_PT12H_ACC': 'TP', # Precipitation
             'RH_PT1H_AVG': 'RH',   # Relative humidity hourly
-            'RH_PT1M_AVG': 'RH'    # Relative humidity 1-min
+            'RH_PT1M_AVG': 'RH',    # Relative humidity 1-min
+            'WS_PT1H_AVG': 'WS',   # Wind speed hourly
+            'WD_PT1H_AVG': 'WD',    # Wind direction hourly
+            'WS_PT10M_AVG': 'WS',  # Wind speed 10-min
+            'WD_PT10M_AVG': 'WD'   # Wind direction 10-min
         }
     
     # Default aggregation rules
@@ -65,7 +69,9 @@ def convert_to_daily(csv_file, start_date=None, column_mapping=None, agg_rules=N
             'TN': 'min',    # Minimum temperature
             'TX': 'max',    # Maximum temperature
             'TP': 'sum',    # Total precipitation
-            'RH': 'mean'    # Average relative humidity
+            'RH': 'mean',    # Average relative humidity
+            'WS': 'mean',   # Average wind speed
+            'WD': 'mean'    # Average wind direction
         }
     
     # Select only columns we need
@@ -161,7 +167,9 @@ def standardize_column_names(df):
         'TX': 'TA_PT24H_MAX',
         'TN': 'TA_PT24H_MIN',
         'TP': 'TP_PT24H_ACC',
-        'RH': 'RH_PT24H_AVG'
+        'RH': 'RH_PT24H_AVG',
+        'WS': 'WS_PT24H_AVG',
+        'WD': 'WD_PT24H_AVG'
     }
     
     # Rename columns first
@@ -169,7 +177,7 @@ def standardize_column_names(df):
     
     # Define column order
     base_cols = ['utctime', 'latitude', 'longitude', 'name']
-    pred_cols = ['WG_PT24H_MAX', 'TA_PT24H_MAX', 'TA_PT24H_MIN', 'TP_PT24H_ACC', 'RH_PT24H_AVG']
+    pred_cols = ['WG_PT24H_MAX', 'TA_PT24H_MAX', 'TA_PT24H_MIN', 'TP_PT24H_ACC', 'RH_PT24H_AVG','WS_PT24H_AVG', 'WD_PT24H_AVG']
     
     # Reorder columns, only including prediction columns that exist
     available_pred_cols = [col for col in pred_cols if col in df.columns]
@@ -179,26 +187,34 @@ def standardize_column_names(df):
 
 if __name__ == "__main__":    
     import argparse
-    
+    import os
+
     parser = argparse.ArgumentParser(description='Process FMI observations to daily values')
     parser.add_argument('--start-date', type=str, help='Start date in YYYY-MM-DD format')
     # NEW: Add harbour name argument
     parser.add_argument('--harbour', type=str, default="Plaisance", help='Name of the harbour')
-    parser.add_argument('input_files', nargs='+', help='List of CSV files to process')
+    parser.add_argument('input_files', nargs='+', help='List of CSV filenames to process (located in /home/ubuntu/data/synop)')
     args = parser.parse_args()
     
     harbour_name = args.harbour  # NEW: Read harbour name
     
-    # Replace hard-coded files list with command line arguments
-    files = args.input_files
+    # Base directory for input CSV files
+    base_csv_directory = "/home/ubuntu/data/synop"
+    # Build full file paths using the base directory
+    files = [os.path.join(base_csv_directory, f) for f in args.input_files]
     
     # Process each file and merge
     daily_dfs = [convert_to_daily(f, start_date=args.start_date) for f in files]
     merged_df = merge_daily_files(daily_dfs)
     
-    
     if merged_df is not None:
-        # Standardize column names and update harbour name dynamically
+        # Convert temperature observations from Celsius to Kelvin.
+        # If temperature columns exist and are in Celsius, add 273.15.
+        if 'TN' in merged_df.columns:
+            merged_df['TN'] = merged_df['TN'] + 273.15
+        if 'TX' in merged_df.columns:
+            merged_df['TX'] = merged_df['TX'] + 273.15
+        
         merged_df["name"] = harbour_name  # UPDATED: Use command line harbour name
         merged_df = standardize_column_names(merged_df)
         
