@@ -27,7 +27,7 @@ mod_dir=f'/home/ubuntu/data/ML/models/OCEANIDS/{harbor_name}/' # saved mdl
 if not os.path.exists(mod_dir):
     os.makedirs(mod_dir)
 
-fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv'
+fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv.gz'
 mod_name=f'mdl_{harbor_name}_{pred}_xgb_era5_oceanids-KFold'
 best_split_file = f'{harbor_name}_{pred}_best_split.json'
 

@@ -50,7 +50,7 @@ data_dir = f'/home/ubuntu/data/ML/training-data/OCEANIDS/{harbor_name}/'  # trai
 mod_dir = f'/home/ubuntu/data/ML/models/OCEANIDS/{harbor_name}/'  # save hyperparameters
 optuna_dir = '/home/ubuntu/data/ML/'  # optuna storage
 
-fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv'
+fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv.gz'
 hfname=f'hyperparameters_{harbor_name}_{pred}.json'
 study=f'{harbor_name}_{pred}_qe'
 

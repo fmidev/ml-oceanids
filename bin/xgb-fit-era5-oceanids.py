@@ -21,7 +21,7 @@ end=harbor.get('end')
 data_dir=f'/home/ubuntu/data/ML/training-data/OCEANIDS/{harbor_name}/' # training data
 mod_dir=f'/home/ubuntu/data/ML/models/OCEANIDS/{harbor_name}/' # saved mdl
 
-fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv'
+fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv.gz'
 mod_name=f'mdl_{harbor_name}_{pred}_xgb_era5_oceanids-QE.json'
 
 # Load hyperparameters config file
