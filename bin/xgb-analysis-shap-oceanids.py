@@ -29,7 +29,7 @@ res_dir=f'/home/ubuntu/data/ML/results/OCEANIDS/{harbor_name}/' # SHAP pic
 if not os.path.exists(res_dir):
     os.makedirs(res_dir)
 
-fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv'
+fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv.gz'
 mod_name=f'mdl_{harbor_name}_{pred}_xgb_era5_oceanids-QE.json'
 shappic=f'shap_{harbor_name}_{pred}_xgb_era5_oceanids-QE.png'
 
