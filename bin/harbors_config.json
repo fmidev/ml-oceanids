@@ -64,5 +64,36 @@
         "longitude": -4.3747201,
         "start":"20121125T000000Z",
         "end":"20240104T000000Z"
+    },
+    "Chios": {
+        "latitude": 38.3453,
+        "longitude": 26.1420,
+        "start":"20000101T000000Z",
+        "end":"20241231T000000Z"
+    },
+    "Heraklion": {
+        "latitude": 35.3353,
+        "longitude": 25.1820,
+        "start":"20000101T000000Z",
+        "end":"20241231T000000Z"
+    },
+    "Limnos": {
+        "latitude": 39.9246,
+        "longitude": 25.2442,
+        "start":"20000101T000000Z",
+        "end":"20241231T000000Z"
+    },
+    "Palaiochora": {
+        "latitude": 35.2253,
+        "longitude": 23.6757,
+        "start":"20091109T000000Z",
+        "end":"20241231T000000Z"
+    },
+    "Kerkyra": {
+        "latitude": 39.6081,
+        "longitude": 19.9139,
+        "start":"20000101T000000Z",
+        "end":"20241231T000000Z"
     }
+
   }
