@@ -154,7 +154,7 @@ os.chdir(optuna_dir)
 print(os.getcwd())
 
 study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name=study,direction="minimize",load_if_exists=True)
-study.optimize(objective, n_trials=50, timeout=432000)
+study.optimize(objective, n_trials=30, timeout=432000)
 
 print("Number of finished trials: ", len(study.trials))
 print("Best trial:")
