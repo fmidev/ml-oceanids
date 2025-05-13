@@ -22,7 +22,8 @@ forecast_type = st.sidebar.selectbox(
 )
 location = st.sidebar.selectbox(
     "Select Location",
-    [ "Raahe", "Rauma", "Vuosaari", "Antwerpen", "Bremerhaven", "Malaga-Puerto", "PontaDelgada", "PraiaDaVittoria", "Saint-Guenole", "Plaisance" ],
+    [ "Raahe", "Rauma", "Vuosaari", "Antwerpen", "Bremerhaven", "Malaga-Puerto", "PontaDelgada", 
+     "PraiaDaVittoria", "Saint-Guenole", "Plaisance", "Limnos", "Chios", "Heraklion", "Corfu", "Palaiochora" ],
     key="location"
 )
 # Update: Added "March" to prediction month options, now including "April"
@@ -221,7 +222,12 @@ def load_training_data(location):
         "Saint-Guenole": "/home/ubuntu/data/ML/training-data/OCEANIDS/Saint-Guenole/training_data_oceanids_Saint-Guenole-sf-addpreds.csv.gz",
         "Raahe": "/home/ubuntu/data/ML/training-data/OCEANIDS/Raahe/training_data_oceanids_Raahe-sf-addpreds.csv.gz", 
         "Rauma": "/home/ubuntu/data/ML/training-data/OCEANIDS/Rauma/training_data_oceanids_Rauma-sf-addpreds.csv.gz",
-        "Vuosaari": "/home/ubuntu/data/ML/training-data/OCEANIDS/Vuosaari/training_data_oceanids_Vuosaari-sf-addpreds.csv.gz"
+        "Vuosaari": "/home/ubuntu/data/ML/training-data/OCEANIDS/Vuosaari/training_data_oceanids_Vuosaari-sf-addpreds.csv.gz",
+        "Limnos": "/home/ubuntu/data/ML/training-data/OCEANIDS/Limnos/training_data_oceanids_Limnos-sf-addpreds.csv.gz",
+        "Chios": "/home/ubuntu/data/ML/training-data/OCEANIDS/Chios/training_data_oceanids_Chios-sf-addpreds.csv.gz",
+        "Heraklion": "/home/ubuntu/data/ML/training-data/OCEANIDS/Heraklion/training_data_oceanids_Heraklion-sf-addpreds.csv.gz",
+        "Corfu": "/home/ubuntu/data/ML/training-data/OCEANIDS/Corfu/training_data_oceanids_Corfu-sf-addpreds.csv.gz",
+        "Palaiochora": "/home/ubuntu/data/ML/training-data/OCEANIDS/Palaiochora/training_data_oceanids_Palaiochora-sf-addpreds.csv.gz"
     }
     try:
         return pd.read_csv(location_files[location], parse_dates=['utctime'])
