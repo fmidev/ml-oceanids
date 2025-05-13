@@ -98,18 +98,18 @@ bbox = get_bbox(latitude, longitude,harbor_name, buffer_degrees=0.25)
 
 # static, 00 UTC, and 24h aggregation predictors
 predictors_00 = [
-    {'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
-    {'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
-    {'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
-    {'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
-    {'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
-    {'tclw':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
-    {'tcwv':'TOTCWV-KGM2:ERA5:5021:1:0:1:0'}, # total column water vapor 
-    {'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, # volumetric soil water layer 1 (0-7cm) (24h instantanous)
-    {'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, # volumetric soil water layer 2 (7-28cm) (24h instantanous)
-    {'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, # volumetric soil water layer 3 (28-100cm) (24h instantanous)
-    {'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'}, # volumetric soil water layer 4 (100-289cm) (24h instantanous)
-    ##OLD {'ewss':'sum_t(EWSS-NM2S:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day sum Eastward turbulent surface stress
+    #{'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
+    #{'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
+    #{'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
+    #{'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
+    #{'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
+    #{'tclw':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
+    #{'tcwv':'TOTCWV-KGM2:ERA5:5021:1:0:1:0'}, # total column water vapor 
+    #{'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, # volumetric soil water layer 1 (0-7cm) (24h instantanous)
+    #{'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, # volumetric soil water layer 2 (7-28cm) (24h instantanous)
+    #{'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, # volumetric soil water layer 3 (28-100cm) (24h instantanous)
+    #{'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'}, # volumetric soil water layer 4 (100-289cm) (24h instantanous)
+    ##OLD{'ewss':'sum_t(EWSS-NM2S:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day sum Eastward turbulent surface stress
     ##OLD{'e':'sum_t(EVAP-M:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day sum Evaporation
     ##OLD{'nsss':'sum_t(NSSS-NM2S:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day sum Northward turbulent surface stress
     ##OLD{'slhf':'sum_t(FLLAT-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # Previous day sum Surface latent heat flux

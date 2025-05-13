@@ -25,14 +25,23 @@ location = st.sidebar.selectbox(
     [ "Raahe", "Rauma", "Vuosaari", "Antwerpen", "Bremerhaven", "Malaga-Puerto", "PontaDelgada", "PraiaDaVittoria", "Saint-Guenole", "Plaisance" ],
     key="location"
 )
-# Update: Default prediction month set to February (index 1)
+# Update: Added "March" to prediction month options, now including "April"
 pred_month = st.sidebar.selectbox(
     "Select Prediction Month",
-    ["January", "February"],
+    ["January", "February", "March", "April"],
     index=1,
     key="pred_month"
 )
-month_code = "202501" if pred_month == "January" else "202502"
+
+# Update: Compute month code based on selection
+if pred_month == "January":
+    month_code = "202501"
+elif pred_month == "February":
+    month_code = "202502"
+elif pred_month == "March":
+    month_code = "202503"
+elif pred_month == "April":
+    month_code = "202504"
 
 # NEW: Display selected harbor plot in the sidebar using use_container_width
 harbor_plot = f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/{location}_training-locs.png"
@@ -43,8 +52,15 @@ st.sidebar.image(harbor_plot, use_container_width=True)
 st.title(f"{forecast_type} Analysis Dashboard")
 st.write("Analysis of forecasts for different locations")
 
-# Compute month code based on selection
-month_code = "202501" if pred_month == "January" else "202502"
+# Update: Recompute month code based on selection (duplicate block updated similarly)
+if pred_month == "January":
+    month_code = "202501"
+elif pred_month == "February":
+    month_code = "202502"
+elif pred_month == "March":
+    month_code = "202503"
+elif pred_month == "April":
+    month_code = "202504"
 
 forecast_map = {
     "Wind Gust Max": "WG_PT24H_MAX",
@@ -195,17 +211,17 @@ with col2:
 @st.cache_data
 def load_training_data(location):
     location_files = {
-        "Antwerpen": "/home/ubuntu/data/ML/training-data/OCEANIDS/Antwerpen/training_data_oceanids_Antwerpen-sf-addpreds.csv",
-        "Bremerhaven": "/home/ubuntu/data/ML/training-data/OCEANIDS/Bremerhaven/training_data_oceanids_Bremerhaven-sf-addpreds.csv",
-        "Malaga": "/home/ubuntu/data/ML/training-data/OCEANIDS/Malaga/training_data_oceanids_Malaga-sf-addpreds.csv",
-        "Malaga-Puerto": "/home/ubuntu/data/ML/training-data/OCEANIDS/Malaga-Puerto/training_data_oceanids_Malaga-Puerto-sf-addpreds.csv",
-        "PraiaDaVittoria": "/home/ubuntu/data/ML/training-data/OCEANIDS/PraiaDaVittoria/training_data_oceanids_PraiaDaVittoria-sf-addpreds.csv",
-        "PontaDelgada": "/home/ubuntu/data/ML/training-data/OCEANIDS/PontaDelgada/training_data_oceanids_PontaDelgada-sf-addpreds.csv",
-        "Plaisance": "/home/ubuntu/data/ML/training-data/OCEANIDS/Plaisance/training_data_oceanids_Plaisance-sf-addpreds.csv",
-        "Saint-Guenole": "/home/ubuntu/data/ML/training-data/OCEANIDS/Saint-Guenole/training_data_oceanids_Saint-Guenole-sf-addpreds.csv",
-        "Raahe": "/home/ubuntu/data/ML/training-data/OCEANIDS/Raahe/training_data_oceanids_Raahe-sf-addpreds.csv", 
-        "Rauma": "/home/ubuntu/data/ML/training-data/OCEANIDS/Rauma/training_data_oceanids_Rauma-sf-addpreds.csv",
-        "Vuosaari": "/home/ubuntu/data/ML/training-data/OCEANIDS/Vuosaari/training_data_oceanids_Vuosaari-sf-addpreds.csv"
+        "Antwerpen": "/home/ubuntu/data/ML/training-data/OCEANIDS/Antwerpen/training_data_oceanids_Antwerpen-sf-addpreds.csv.gz",
+        "Bremerhaven": "/home/ubuntu/data/ML/training-data/OCEANIDS/Bremerhaven/training_data_oceanids_Bremerhaven-sf-addpreds.csv.gz",
+        "Malaga": "/home/ubuntu/data/ML/training-data/OCEANIDS/Malaga/training_data_oceanids_Malaga-sf-addpreds.csv.gz",
+        "Malaga-Puerto": "/home/ubuntu/data/ML/training-data/OCEANIDS/Malaga-Puerto/training_data_oceanids_Malaga-Puerto-sf-addpreds.csv.gz",
+        "PraiaDaVittoria": "/home/ubuntu/data/ML/training-data/OCEANIDS/PraiaDaVittoria/training_data_oceanids_PraiaDaVittoria-sf-addpreds.csv.gz",
+        "PontaDelgada": "/home/ubuntu/data/ML/training-data/OCEANIDS/PontaDelgada/training_data_oceanids_PontaDelgada-sf-addpreds.csv.gz",
+        "Plaisance": "/home/ubuntu/data/ML/training-data/OCEANIDS/Plaisance/training_data_oceanids_Plaisance-sf-addpreds.csv.gz",
+        "Saint-Guenole": "/home/ubuntu/data/ML/training-data/OCEANIDS/Saint-Guenole/training_data_oceanids_Saint-Guenole-sf-addpreds.csv.gz",
+        "Raahe": "/home/ubuntu/data/ML/training-data/OCEANIDS/Raahe/training_data_oceanids_Raahe-sf-addpreds.csv.gz", 
+        "Rauma": "/home/ubuntu/data/ML/training-data/OCEANIDS/Rauma/training_data_oceanids_Rauma-sf-addpreds.csv.gz",
+        "Vuosaari": "/home/ubuntu/data/ML/training-data/OCEANIDS/Vuosaari/training_data_oceanids_Vuosaari-sf-addpreds.csv.gz"
     }
     try:
         return pd.read_csv(location_files[location], parse_dates=['utctime'])
@@ -320,9 +336,17 @@ plt.title('Heatmap of Ensemble Members')
 plt.tight_layout()
 st.pyplot(fig)
 
-# NEW: In the Training Data Analysis section, update to three columns for fscore, shap, and beeswarm images
+# NEW: In the Training Data Analysis section, update metrics by loading the provided CSV file example.
 if has_observations:
     st.subheader("Training Data Analysis")
+    # Updated to load metrics from CSV instead of computing them from training data.
+    metrics_file = f"/home/ubuntu/data/ML/results/OCEANIDS/metrics/{location}-metrics.csv"
+    try:
+        metrics_df = pd.read_csv(metrics_file)
+        st.table(metrics_df)
+    except FileNotFoundError:
+        st.info("Metrics CSV file not found for this location.")
+        
     col1, col2, col3 = st.columns(3)
     with col1:
         st.image(f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/fscore_{location}_{forecast_prefix}_xgb_era5_oceanids-QE.png")

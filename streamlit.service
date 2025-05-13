@@ -4,7 +4,7 @@ Description=Streamlit Daemon
 [Service]
 User=ubuntu
 WorkingDirectory=/home/ubuntu/ml-oceanids/bin
-ExecStart=/usr/bin/streamlit run streamlit_app.py
+ExecStart=/home/ubuntu/mambaforge/envs/pandas/bin/streamlit run streamlit_app.py
 Restart=always
 
 [Install]

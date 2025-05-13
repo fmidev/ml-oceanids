@@ -1,9 +1,0 @@
-Harbor,diff,Pred,RMSE,MAE
-Vuosaari,with-diff,WG_PT24H_MAX,1.58544,1.25164
-Vuosaari,without-diff,WG_PT24H_MAX,1.62315,1.26245
-Vuosaari,with-only-diff,WG_PT24H_MAX,1.60572,1.26523
-Vuosaari,without-fe,WG_PT24H_MAX,1.64471,1.29922
-Vuosaari,with-diff,TP_PT24H_SUM,3.30538,2.21213
-Vuosaari,without-diff,TP_PT24H_SUM,3.41434,2.29656
-Vuosaari,with-only-diff,TP_PT24H_SUM,3.40739,2.33341
-Vuosaari,without-fe,TP_PT24H_SUM,3.55536,2.41680

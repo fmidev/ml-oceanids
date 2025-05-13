@@ -1,24 +1,18 @@
 import pandas as pd
 
-hourly_csv = '/home/ubuntu/data/synop/fmisid106787_Malaga-puerto_2018-2024_ws-wd-wg-rh_3h.csv'
+# Read the CSV file as a DataFrame
+add_file_path = '/home/ubuntu/data/synop/hnms/limnos-obs-relhum-2012-2024.csv'
+main_file_path = '/home/ubuntu/data/synop/hnms/limnos-obs-relhum-2000-2011.csv'
 
-# Read and process hourly data
-hourly_df = pd.read_csv(hourly_csv, usecols=['time', 'RH_PT1M_AVG'])
-hourly_df.rename(columns={'time': 'date'}, inplace=True)
-hourly_df['date'] = pd.to_datetime(hourly_df['date']).dt.floor('D')  # Convert to daily
-hourly_daily = hourly_df.groupby('date')['RH_PT1M_AVG'].mean().reset_index()
-hourly_daily.rename(columns={'RH_PT1M_AVG': 'RH_PT24H_AVG'}, inplace=True)
+main_df = pd.read_csv(main_file_path)
+add_df = pd.read_csv(add_file_path)
 
-# Create complete date range
-date_range = pd.date_range(start=hourly_daily['date'].min(),
-                          end=hourly_daily['date'].max(),
-                          freq='D')
+# Append the relevant columns from add_df to main_df
+main_df = pd.concat([main_df, add_df[['timestamp', 'station', 'measurement']]], ignore_index=True)
+# Fill 'type' and 'unit' columns with static values from main_df
+main_df['type'] = main_df['type'].fillna(method='ffill')
+main_df['unit'] = main_df['unit'].fillna(method='ffill')
 
-# Create a new DataFrame with all dates
-complete_daily = pd.DataFrame({'date': date_range})
-
-# Merge with the averaged data
-hourly_daily = pd.merge(complete_daily, hourly_daily, on='date', how='left')
-
-print(hourly_daily)
-hourly_daily.to_csv('/home/ubuntu/data/synop/fmisid106787_Malaga-puerto_2018-2024_rh_24h.csv', index=False)
+# Save the updated DataFrame to a new CSV file
+output_file_path = '/home/ubuntu/data/synop/hnms/limnos-obs-relhum-2000-2024.csv'
+main_df.to_csv(output_file_path, index=False)
