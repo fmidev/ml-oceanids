@@ -4,6 +4,7 @@ import xgboost as xgb
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 ### XGBoost for fitting a model with ERA5/ERA5D data in OCEANIDS
 # (AK 2025) 
+# adapted to cordex data (RS)
 warnings.filterwarnings("ignore")
 
 startTime=time.time()
