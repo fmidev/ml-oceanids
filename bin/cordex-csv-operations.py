@@ -9,7 +9,7 @@ df2 = pd.read_csv('/home/ubuntu/data/ML/training-data/OCEANIDS/ece3-Bremerhaven.
 df1['utctime'] = pd.to_datetime(df1['utctime'])
 df2['utctime'] = pd.to_datetime(df2['utctime'])
 
-# Filter df1 to include only data from 2013-07-01 to 2024-01-01
+# Filter df1
 start_date = '2000-01-01'
 end_date = '2023-08-31'
 df1 = df1[(df1['utctime'] >= start_date) & (df1['utctime'] <= end_date)]

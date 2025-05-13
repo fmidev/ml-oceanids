@@ -28,50 +28,21 @@ def process_variable_group(df, pred, include_pred_stats=True):
     df = df.merge(monthly_stats, on=['year', 'month'], how='left')
     return df
 
-# Function to fill data after set date with monthly statistics
-def fill_data(df, monthly_stats, pred):
-    future_data = df[df['utctime'] > obs_date].copy()
-    for month in range(1, 13):
-        future_data.loc[future_data['month'] == month, f'{pred}_mean'] = monthly_stats.loc[month, 'mean']
-        future_data.loc[future_data['month'] == month, f'{pred}_min'] = monthly_stats.loc[month, 'min']
-        future_data.loc[future_data['month'] == month, f'{pred}_max'] = monthly_stats.loc[month, 'max']
-    return future_data
-
-def adjust_future(df, monthly_stats, pred, variable_prefix):
-    future_data = df[df['utctime'] > obs_date].copy()
-    past_data = df[df['utctime'] <= obs_date].copy()
-
-    for month in range(1, 13):
-        future_data_month = future_data[future_data['month'] == month]
-        past_data_month = past_data[past_data['month'] == month]
-
-        diff_mean_future = future_data_month[f'{variable_prefix}_{pred}_diff_mean']
-        diff_min_future = future_data_month[f'{variable_prefix}_{pred}_diff_min']
-        diff_max_future = future_data_month[f'{variable_prefix}_{pred}_diff_max']
-
-        diff_mean_past = past_data_month[f'{variable_prefix}_{pred}_diff_mean'].mean()
-        diff_min_past = past_data_month[f'{variable_prefix}_{pred}_diff_min'].mean()
-        diff_max_past = past_data_month[f'{variable_prefix}_{pred}_diff_max'].mean()
-
-        future_data.loc[future_data['month'] == month, f'{pred}_mean'] = monthly_stats.loc[month, 'mean'] + diff_mean_future - diff_mean_past
-        future_data.loc[future_data['month'] == month, f'{pred}_min'] = monthly_stats.loc[month, 'min'] + diff_min_future - diff_min_past
-        future_data.loc[future_data['month'] == month, f'{pred}_max'] = monthly_stats.loc[month, 'max'] + diff_max_future - diff_max_past
-
-    return future_data
-
 # Read the CSV file into a DataFrame
-start_date = '2006-01-01'
-obs_date = '2024-12-01'
-loc = sys.argv[1]
-model = sys.argv[2]
-df = pd.read_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{model}-{loc}-cordex-with-obs.csv')
+start_date = '2013-07-01'
+obs_date = '2025-01-01'
+scenario = sys.argv[1]
+loc = sys.argv[2]
+model = sys.argv[3]
+df = pd.read_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/cordex_{scenario}_{model}_{loc}.csv')
 
 # Define the correlation mappings
 correlation_mappings = {
     'WG_PT24H_MAX': 'maxWind',
-    'TN_PT24H_MIN': 'tasmin',
-    'TX_PT24H_MAX': 'tasmax',
-    'TP_PT24H_SUM': 'pr'
+    'TA_PT24H_MIN': 'tasmin',
+    'TA_PT24H_MAX': 'tasmax',
+    'TP_PT24H_ACC': 'pr',
+    'RH_PT24H_AVG': 'hurs'
 }
 
 # Convert 'utctime' to datetime and extract year and month
@@ -79,53 +50,105 @@ df['utctime'] = pd.to_datetime(df['utctime'])
 df['year'] = df['utctime'].dt.year
 df['month'] = df['utctime'].dt.month
 
+# Initialize output DataFrames with the original input data
+all_training_data = df[df['utctime'] <= obs_date].copy()
+all_training_data = all_training_data[all_training_data['utctime'] >= start_date].copy()
+# Modified to start prediction data from same date as training data
+all_prediction_data = df[df['utctime'] >= start_date].copy()
+
 # Loop through each predictor in correlation_mappings
 for pred in correlation_mappings.keys():
     # Calculate monthly statistics for the chosen pred up to set date
     monthly_stats = df[df['utctime'] <= obs_date].groupby('month')[pred].agg(['mean', 'min', 'max'])
 
-    # Fill data after set date with monthly statistics
-    future_data = fill_data(df, monthly_stats, pred)
+    # Process data for the current predictor
+    variable_prefix = correlation_mappings[pred]
+    
+    # Calculate sum for the current variable
+    sum_col = f'{variable_prefix}_sum'
+    all_training_data[sum_col] = all_training_data[[f'{variable_prefix}-1', f'{variable_prefix}-2', 
+                                                 f'{variable_prefix}-3', f'{variable_prefix}-4']].sum(axis=1) / 4
+    all_prediction_data[sum_col] = all_prediction_data[[f'{variable_prefix}-1', f'{variable_prefix}-2', 
+                                                     f'{variable_prefix}-3', f'{variable_prefix}-4']].sum(axis=1) / 4
+    
+    # Calculate monthly aggregates for the current variable using historical data
+    agg_dict = {sum_col: ['mean', 'min', 'max'], pred: ['mean', 'min', 'max']}
+    monthly_aggs = all_training_data.groupby(['year', 'month']).agg(agg_dict)
+    monthly_aggs.columns = ['_'.join(col).strip() for col in monthly_aggs.columns.values]
+    monthly_aggs.reset_index(inplace=True)
+    
+    # Calculate difference columns
+    monthly_aggs[f'{variable_prefix}_{pred}_diff_mean'] = monthly_aggs[f'{sum_col}_mean'] - monthly_aggs[f'{pred}_mean']
+    monthly_aggs[f'{variable_prefix}_{pred}_diff_min'] = monthly_aggs[f'{sum_col}_min'] - monthly_aggs[f'{pred}_min']
+    monthly_aggs[f'{variable_prefix}_{pred}_diff_max'] = monthly_aggs[f'{sum_col}_max'] - monthly_aggs[f'{pred}_max']
+    
+    # Create another aggregation by month only (not by year) for future data filling
+    monthly_only_aggs = monthly_aggs.groupby('month').mean().reset_index()
+    
+    # Add aggregated columns to both datasets
+    new_columns = [f'{sum_col}_mean', f'{sum_col}_min', f'{sum_col}_max',
+                  f'{pred}_mean', f'{pred}_min', f'{pred}_max',
+                  f'{variable_prefix}_{pred}_diff_mean', f'{variable_prefix}_{pred}_diff_min', f'{variable_prefix}_{pred}_diff_max']
+    
+    all_training_data = all_training_data.merge(monthly_aggs[['year', 'month'] + new_columns], 
+                                             on=['year', 'month'], how='left')
+    
+    # For prediction data, we need special handling for future dates
+    # First merge historical dates normally
+    past_prediction = all_prediction_data[all_prediction_data['utctime'] <= obs_date].copy()
+    past_prediction = past_prediction.merge(monthly_aggs[['year', 'month'] + new_columns], 
+                                         on=['year', 'month'], how='left')
+    
+    # For future dates, use the monthly averages (not specific to year)
+    future_prediction = all_prediction_data[all_prediction_data['utctime'] > obs_date].copy()
+    
+    # Merge the monthly stats for future data
+    for month in range(1, 13):
+        month_mask = future_prediction['month'] == month
+        if month in monthly_stats.index:
+            # Fill predictor statistics
+            future_prediction.loc[month_mask, f'{pred}_mean'] = monthly_stats.loc[month, 'mean']
+            future_prediction.loc[month_mask, f'{pred}_min'] = monthly_stats.loc[month, 'min'] 
+            future_prediction.loc[month_mask, f'{pred}_max'] = monthly_stats.loc[month, 'max']
+            
+            # Fill sum statistics using monthly averages
+            month_data = monthly_only_aggs[monthly_only_aggs['month'] == month]
+            if not month_data.empty:
+                future_prediction.loc[month_mask, f'{sum_col}_mean'] = month_data[f'{sum_col}_mean'].values[0]
+                future_prediction.loc[month_mask, f'{sum_col}_min'] = month_data[f'{sum_col}_min'].values[0]
+                future_prediction.loc[month_mask, f'{sum_col}_max'] = month_data[f'{sum_col}_max'].values[0]
+                
+                # Fill difference columns
+                future_prediction.loc[month_mask, f'{variable_prefix}_{pred}_diff_mean'] = month_data[f'{variable_prefix}_{pred}_diff_mean'].values[0]
+                future_prediction.loc[month_mask, f'{variable_prefix}_{pred}_diff_min'] = month_data[f'{variable_prefix}_{pred}_diff_min'].values[0]
+                future_prediction.loc[month_mask, f'{variable_prefix}_{pred}_diff_max'] = month_data[f'{variable_prefix}_{pred}_diff_max'].values[0]
+    
+    # Combine past and future prediction data
+    all_prediction_data = pd.concat([past_prediction, future_prediction], ignore_index=True)
+    
+    # Adjust future values using differences
+    future_mask = all_prediction_data['utctime'] > obs_date
+    for month in range(1, 13):
+        month_mask = all_prediction_data['month'] == month
+        future_month_mask = future_mask & month_mask
+        
+        # Get average differences from historical data for this month
+        past_month_mask = (~future_mask) & month_mask
+        diff_mean_past = all_prediction_data.loc[past_month_mask, f'{variable_prefix}_{pred}_diff_mean'].mean()
+        
+        # Apply adjustments to future data
+        if month in monthly_stats.index:
+            mean_stat = monthly_stats.loc[month, 'mean']
+            diff_means = all_prediction_data.loc[future_month_mask, f'{variable_prefix}_{pred}_diff_mean']
+            
+            # Adjust the actual predictor value
+            all_prediction_data.loc[future_month_mask, pred] = mean_stat + diff_means - diff_mean_past
+    
+    print(f'Processed {pred} data')
 
-    # Split the original DataFrame into two parts: up to set date and after set date
-    df_past = df[df['utctime'] <= obs_date]
-    df_future = future_data
+# Save the combined DataFrames to CSV files
+all_training_data.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/training_data_oceanids_{loc}_cordex_{scenario}_{model}.csv', index=False)
+print(f'Combined training data saved for {scenario}_{model}_{loc}')
 
-    # Process the variable group based on the pred for data up to set date
-    processed_df_past = process_variable_group(df_past, pred)
-
-    # Filter processed_df_past from start_date
-    processed_df_past = processed_df_past[processed_df_past['utctime'] >= start_date]
-
-    # Process the variable group based on the pred for data after set date, excluding pred stats
-    processed_df_future = process_variable_group(df_future, pred, include_pred_stats=False)
-
-    # Combine the processed data up to set date with the processed future data
-    combined_df = pd.concat([processed_df_past, processed_df_future], ignore_index=True)
-
-    adjusted_future = adjust_future(combined_df, monthly_stats, pred, correlation_mappings[pred])
-    past = combined_df[combined_df['utctime'] <= obs_date]
-
-    combined_df = pd.concat([past, adjusted_future], ignore_index=True)
-
-    start_year = processed_df_past['utctime'].min().year
-    end_year = processed_df_past['utctime'].max().year
-
-    prediction_start_year = combined_df['utctime'].min().year
-    prediction_end_year = combined_df['utctime'].max().year
-
-    # Rename processed_df_past to training_data and combined_df to prediction_data
-    training_data = processed_df_past
-    prediction_data = combined_df
-
-    # Remove pred columns
-    pred_columns = correlation_mappings.keys()
-    prediction_data.drop(columns=pred_columns, inplace=True)
-    pred_columns = [col for col in correlation_mappings.keys() if col != pred]
-    training_data.drop(columns=pred_columns, inplace=True)
-
-    # Save the updated DataFrame to a new CSV file
-    training_data.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/training_data_oceanids_{model}_{loc.capitalize()}_{pred}_{start_year}-{end_year}.csv', index=False)
-    print(f'Training data saved for {model}_{loc}_{pred}')
-    prediction_data.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/prediction_data_oceanids_{model}-{loc.capitalize()}_{pred}_{prediction_start_year}-{prediction_end_year}.csv', index=False)
-    print(f'Prediction data saved for {model}_{loc}_{pred}')
+all_prediction_data.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/prediction_data_oceanids_{loc}_cordex_{scenario}_{model}.csv', index=False)
+print(f'Combined prediction data saved for {scenario}_{model}_{loc}')

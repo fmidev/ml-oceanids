@@ -1,0 +1,31 @@
+{
+    "WG_PT24H_MAX": {
+      "parameter": "maxWind",
+      "quantile_alpha": 0.95
+    },
+    "TA_PT24H_MAX": {
+      "parameter": "tasmax",
+      "quantile_alpha": 0.95
+    },
+    "TA_PT24H_MIN": {
+      "parameter": "tasmin",
+      "quantile_alpha": 0.05
+    },
+    "TP_PT24H_ACC": {
+      "parameter": "pr",
+      "quantile_alpha": 0.95
+    },
+    "RH_PT24H_AVG": {
+      "parameter": "hurs",
+      "quantile_alpha": 0.95
+    },
+    "WS_PT24H_AVG": {
+      "parameter": "sfcWind",
+      "quantile_alpha": 0.95
+    },
+    "WD_PT24H_AVG": {
+      "parameter": "",
+      "quantile_alpha": 0.95
+    }
+  }
+  
