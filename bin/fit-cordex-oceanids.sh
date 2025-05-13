@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Record start time
+start_time=$(date +%s)
+
 scenario=$1
 harbor=$2
 predictand=$3
@@ -41,4 +44,14 @@ mkdir -p "$data_dir" "$model_dir" "$results_dir"
 # Step 7: Run prediction
 ! [ -s "${results_dir}prediction_cordex_${scenario}_${harbor}_${predictand}_${model}.csv" ] && python xgb-predict-cordex.py $scenario $harbor $predictand $model || echo "Prediction already exists"
 
+# Calculate elapsed time
+end_time=$(date +%s)
+elapsed_seconds=$((end_time - start_time))
+
+# Convert seconds to hours, minutes, seconds
+hours=$((elapsed_seconds / 3600))
+minutes=$(((elapsed_seconds % 3600) / 60))
+seconds=$((elapsed_seconds % 60))
+
 echo "Pipeline complete!"
+echo "Total runtime: ${hours}h ${minutes}m ${seconds}s"
