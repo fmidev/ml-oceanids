@@ -47,9 +47,14 @@ os.makedirs(out_dir, exist_ok=True)
 # Define filenames
 input_file = f'prediction_data_oceanids_{harbor_name}_cordex_{scenario}_{model}.csv'
 # Use old variable name in model filename
-mdl_name = f'mdl_{harbor_name}_{pred}_{model}_xgb_cordex_{scenario}_oceanids-QE.json'
+mdl_name = f'mdl_{harbor_name}_{pred}_{model}_xgb_cordex_rcp45_oceanids-QE.json'
 
-print(f"Harbor: {harbor_name}, Prediction: {pred} (Model uses: {old_pred}), Model: {model}")
+# Only show "Model uses: X" if it's different from the prediction variable
+if pred in var_name_map:
+    print(f"Harbor: {harbor_name}, Prediction: {pred} (Model uses: {old_pred}), Model: {model}")
+else:
+    print(f"Harbor: {harbor_name}, Prediction: {pred}, Model: {model}")
+    
 print(f"Loading prediction data from: {input_file}")
 print(f"Using model: {mdl_name}")
 print(f"XGBoost version: {xgb.__version__}")  # Print XGBoost version for debugging
@@ -65,28 +70,61 @@ if not os.path.exists(model_path):
 
 # Create result dataframe with timestamp and observations
 df_result = pd.DataFrame({'utctime': df_data['utctime']})
-df_result[pred] = df_data[pred]  # Observations are already in the file
 
-if pred == 'WG_PT24H_MAX':
-    df_result["maxWind_sum_mean"] = df_data["maxWind_sum_mean"]
-    df_result["maxWind_sum_max"] = df_data["maxWind_sum_max"]
-    df_result["maxWind_sum_min"] = df_data["maxWind_sum_min"] 
-elif pred == 'WS_PT24H_AVG':
-    df_result["sfcWind_sum_mean"] = df_data["sfcWind_sum_mean"]
-    df_result["sfcWind_sum_max"] = df_data["sfcWind_sum_max"]
-    df_result["sfcWind_sum_min"] = df_data["sfcWind_sum_min"]
-elif pred == 'TA_PT24H_MIN':
-    df_result["tasmin_sum_mean"] = df_data["tasmin_sum_mean"] - 273.15
-    df_result["tasmin_sum_max"] = df_data["tasmin_sum_max"] - 273.15
-    df_result["tasmin_sum_min"] = df_data["tasmin_sum_min"] - 273.15
-elif pred == 'TA_PT24H_MAX':
-    df_result["tasmax_sum_mean"] = df_data["tasmax_sum_mean"] - 273.15
-    df_result["tasmax_sum_max"] = df_data["tasmax_sum_max"] - 273.15
-    df_result["tasmax_sum_min"] = df_data["tasmax_sum_min"] - 273.15
+# Add observations with appropriate unit conversions
+if pred == 'TA_PT24H_MIN' or pred == 'TA_PT24H_MAX':
+    # Check if temperatures are in Kelvin (>100) and convert to Celsius
+    if df_data[pred].median() > 100:
+        df_result[pred] = df_data[pred] - 273.15
+        print(f"Converting observation {pred} from Kelvin to Celsius")
+    else:
+        df_result[pred] = df_data[pred]
 elif pred == 'TP_PT24H_ACC':
-    df_result["pr_sum_mean"] = df_data["pr_sum_mean"] * 86400
-    df_result["pr_sum_max"] = df_data["pr_sum_max"] * 86400
-    df_result["pr_sum_min"] = df_data["pr_sum_min"] * 86400
+    # Check if precipitation is in m/s (very small values) and convert to mm/day
+    if df_data[pred].max() < 0.001 and df_data[pred].max() > 0:
+        df_result[pred] = df_data[pred] * 86400 * 1000
+        print(f"Converting observation {pred} from m/s to mm/day")
+    else:
+        df_result[pred] = df_data[pred]
+else:
+    # Other variables are already in correct units
+    df_result[pred] = df_data[pred]
+
+# Add CORDEX variable summaries with proper units
+if pred == 'WG_PT24H_MAX':
+    df_result["maxWind_mean"] = df_data["maxWind_sum_mean"]
+    df_result["maxWind_max"] = df_data["maxWind_sum_max"]
+    df_result["maxWind_min"] = df_data["maxWind_sum_min"] 
+elif pred == 'WS_PT24H_AVG':
+    df_result["sfcWind_mean"] = df_data["sfcWind_sum_mean"]
+    df_result["sfcWind_max"] = df_data["sfcWind_sum_max"]
+    df_result["sfcWind_min"] = df_data["sfcWind_sum_min"]
+elif pred == 'TA_PT24H_MIN':
+    df_result["tasmin_mean"] = df_data["tasmin_sum_mean"] - 273.15  # Convert K to °C
+    df_result["tasmin_max"] = df_data["tasmin_sum_max"] - 273.15  # Convert K to °C
+    df_result["tasmin_min"] = df_data["tasmin_sum_min"] - 273.15  # Convert K to °C
+elif pred == 'TA_PT24H_MAX':
+    df_result["tasmax_mean"] = df_data["tasmax_sum_mean"] - 273.15  # Convert K to °C
+    df_result["tasmax_max"] = df_data["tasmax_sum_max"] - 273.15  # Convert K to °C
+    df_result["tasmax_min"] = df_data["tasmax_sum_min"] - 273.15  # Convert K to °C
+elif pred == 'TP_PT24H_ACC':
+    # Check if values are already in mm/day range (>0.1) or m/s range (<0.001)
+    if df_data["pr_sum_mean"].max() < 0.1:
+        # Values are in m/s, convert to mm/day
+        df_result["pr_mean"] = df_data["pr_sum_mean"] * 86400
+        df_result["pr_max"] = df_data["pr_sum_max"] * 86400
+        df_result["pr_min"] = df_data["pr_sum_min"] * 86400
+        print(f"Converting CORDEX precipitation from m/s to mm/day")
+    else:
+        # Values appear to already be in mm/day
+        df_result["pr_mean"] = df_data["pr_sum_mean"]
+        df_result["pr_max"] = df_data["pr_sum_max"]
+        df_result["pr_min"] = df_data["pr_sum_min"]
+        print(f"CORDEX precipitation appears to already be in mm/day, not converting")
+elif pred == 'RH_PT24H_AVG':
+    df_result["hurs_mean"] = df_data["hurs_sum_mean"]
+    df_result["hurs_max"] = df_data["hurs_sum_max"]
+    df_result["hurs_min"] = df_data["hurs_sum_min"]
 else:
     raise ValueError("Invalid predictor")
     
@@ -138,8 +176,12 @@ if pred in var_name_map:
     
     # Apply renaming if needed
     if rename_dict:
-        print(f"Renaming columns to match model expectations: {rename_dict}")
+        # Just print a simplified message without the full dictionary
+        print(f"Renaming columns from {pred} to {old_name} for model compatibility")
         df_pred = df_pred.rename(columns=rename_dict)
+        
+        # Uncomment the line below for debugging if needed
+        # print(f"Detailed renaming: {rename_dict}")
 else:
     df_pred = df_data
 
@@ -169,6 +211,23 @@ df_pred = df_pred[required_columns]
 # XGBoost predict without DMatrix
 result = fitted_mdl.predict(df_pred)
 result = result.tolist()
+
+# Convert prediction to correct units if needed
+if pred == 'TA_PT24H_MIN' or pred == 'TA_PT24H_MAX':
+    # Check if model output is likely in Kelvin (values > 100)
+    if max(result) > 100:
+        result = [r - 273.15 for r in result]
+        print(f"Converting prediction {pred} from Kelvin to Celsius")
+elif pred == 'TP_PT24H_ACC':
+    # Check if model output might be in m/s (very small values)
+    if max(result) < 0.001 and max(result) > 0:
+        result = [r * 86400 * 1000 for r in result]
+        print(f"Converting prediction {pred} from m/s to mm/day")
+    
+    # Set negative precipitation values to 0
+    result = [max(0, r) for r in result]
+    print(f"Set {sum(1 for r in result if r < 0)} negative precipitation values to 0")
+
 df_result['Predicted'] = result
 
 # Use the new variable name in the output filename for consistency

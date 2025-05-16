@@ -32,14 +32,19 @@ mkdir -p "$data_dir" "$model_dir" "$results_dir"
 # Step 3: Add training data
 ! [ -s "${data_dir}training_data_oceanids_${harbor}_cordex_${scenario}_${model}.csv" ] && python cordex-training-additions.py $scenario $harbor $model || echo "Training data already exists"
 
-# Step 4: Fit KFold model to determine best train/test split
-! [ -s "${model_dir}cordex_${scenario}_${harbor}_${predictand}_${model}_best_split.json" ] && python xgb-fit-KFold-cordex-oceanids.py $scenario $harbor $predictand $model || echo "Already done KFold best split"
-
-# Step 5: Optimize hyperparameters with Optuna
-! [ -s "${model_dir}hyperparameters_cordex_${scenario}_${harbor}_${predictand}_${model}.json" ] && python xgb-fit-optuna-cordex-oceanids.py $scenario $harbor $predictand $model || echo "Already done Optuna"
-
-# Step 6: Fit final model
-! [ -s "${model_dir}mdl_${harbor}_${predictand}_${model}_xgb_cordex_${scenario}_oceanids-QE.json" ] && python xgb-fit-cordex-oceanids.py $scenario $harbor $predictand $model || echo "Already fitted a model"
+# For RCP85 scenario, skip model creation steps
+if [ "$scenario" != "rcp85" ]; then
+    # Step 4: Fit KFold model to determine best train/test split
+    ! [ -s "${model_dir}cordex_${scenario}_${harbor}_${predictand}_${model}_best_split.json" ] && python xgb-fit-KFold-cordex-oceanids.py $scenario $harbor $predictand $model || echo "Already done KFold best split"
+    
+    # Step 5: Optimize hyperparameters with Optuna
+    ! [ -s "${model_dir}hyperparameters_cordex_${scenario}_${harbor}_${predictand}_${model}.json" ] && python xgb-fit-optuna-cordex-oceanids.py $scenario $harbor $predictand $model || echo "Already done Optuna"
+    
+    # Step 6: Fit final model
+    ! [ -s "${model_dir}mdl_${harbor}_${predictand}_${model}_xgb_cordex_${scenario}_oceanids-QE.json" ] && python xgb-fit-cordex-oceanids.py $scenario $harbor $predictand $model || echo "Already fitted a model"
+else
+    echo "Scenario is rcp85, skipping model creation steps (KFold, Optuna, fitting)"
+fi
 
 # Step 7: Run prediction
 ! [ -s "${results_dir}prediction_cordex_${scenario}_${harbor}_${predictand}_${model}.csv" ] && python xgb-predict-cordex.py $scenario $harbor $predictand $model || echo "Prediction already exists"

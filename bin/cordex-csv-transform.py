@@ -118,6 +118,51 @@ def add_observations(df, location):
     
     return merged_df
 
+def transform_units(df):
+    """
+    Transform observation units to match CORDEX data units.
+    
+    Args:
+        df (pd.DataFrame): DataFrame with both CORDEX and observation data
+        
+    Returns:
+        pd.DataFrame: DataFrame with observation units transformed to match CORDEX
+    """
+    # Make a copy to avoid modifying the original dataframe
+    transformed_df = df.copy()
+    
+    # Transform observation temperatures from Celsius to Kelvin if needed
+    if 'TA_PT24H_MAX' in transformed_df.columns:
+        # Check if values are likely already in Kelvin (median > 100)
+        median_temp = transformed_df['TA_PT24H_MAX'].dropna().median()
+        if median_temp < 100:  # Assume Celsius
+            transformed_df['TA_PT24H_MAX'] = transformed_df['TA_PT24H_MAX'] + 273.15
+            print("Transformed TA_PT24H_MAX from Celsius to Kelvin")
+        else:
+            print("TA_PT24H_MAX appears to already be in Kelvin, not transforming")
+        
+    if 'TA_PT24H_MIN' in transformed_df.columns:
+        # Check if values are likely already in Kelvin
+        median_temp = transformed_df['TA_PT24H_MIN'].dropna().median()
+        if median_temp < 100:  # Assume Celsius
+            transformed_df['TA_PT24H_MIN'] = transformed_df['TA_PT24H_MIN'] + 273.15
+            print("Transformed TA_PT24H_MIN from Celsius to Kelvin")
+        else:
+            print("TA_PT24H_MIN appears to already be in Kelvin, not transforming")
+    
+    # Transform precipitation from mm/day to m/s if needed
+    if 'TP_PT24H_ACC' in transformed_df.columns:
+        # Check if values are likely already in m/s (very small values)
+        max_precip = transformed_df['TP_PT24H_ACC'].dropna().max()
+        if max_precip > 0.001:  # Assume mm/day
+            # Convert from mm/day to m/s: divide by seconds in a day and by 1000 to get m
+            transformed_df['TP_PT24H_ACC'] = transformed_df['TP_PT24H_ACC'] / (86400 * 1000)
+            print("Transformed TP_PT24H_ACC from mm/day to m/s")
+        else:
+            print("TP_PT24H_ACC appears to already be in m/s, not transforming")
+            
+    return transformed_df
+
 def reorder_columns(df, lat_lon_columns):
     """
     Reorder columns to follow a consistent format.
@@ -182,9 +227,13 @@ if __name__ == "__main__":
     print("Adding observation data...")
     with_obs = add_observations(pivoted_df, location)
     
-    # Step 3: Reorder columns
+    # Step 3: Transform units
+    print("Transforming units...")
+    transformed_df = transform_units(with_obs)
+    
+    # Step 4: Reorder columns
     print("Reordering columns...")
-    final_df = reorder_columns(with_obs, lat_lon_columns)
+    final_df = reorder_columns(transformed_df, lat_lon_columns)
     
     # Create output directory
     output_dir = f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{location}'
