@@ -4,7 +4,7 @@ harbor=$1
 predictand=$2
 cd /home/ubuntu/ml-oceanids/bin
 
-# Trainind data preprocessing
+# Training data preprocessing
 ! [ -s /home/ubuntu/data/ML/training-data/OCEANIDS/${harbor}/training_data_oceanids_${harbor}-sf-addpreds.csv.gz ] && ! [ -s /home/ubuntu/data/ML/training-data/OCEANIDS/${harbor}/training_data_oceanids_${harbor}-sf_2020-clim.csv.gz ] && python ts-era5-oceanids.py $harbor && ./join-training-data.sh $harbor && python add-predictors-oceanids.py $harbor || echo "training data files already done"
 
 # KFold
@@ -23,3 +23,7 @@ python xgb-analysis-shap-oceanids.py $harbor $predictand
 # Fscore analysis
 #! [ -s /home/ubuntu/data/ML/results/OCEANIDS/${harbor}/fscore_${harbor}_${predictand}_xgb_era5_oceanids-QE.png ] && 
 python xgb-analysis-fscore-oceanids.py $harbor $predictand
+
+# Metrics
+python xgb-predict-era5-oceanids.py $harbor $predictand
+python calculate-metrics-oceanids.py $harbor
