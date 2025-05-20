@@ -16,7 +16,8 @@ st.set_page_config(
 st.sidebar.header("Settings")
 forecast_type = st.sidebar.selectbox(
     "Select Forecast Type",
-    ["Wind Gust Max", "Max Temperature", "Min Temperature", "Total Precipitation"],
+    ["Wind Gust Max", "Max Temperature", "Min Temperature", "Total Precipitation",
+     "Wind Speed Average", "Relative Humidity"],  # added new types
     index=0,
     key="forecast_type"
 )
@@ -26,10 +27,10 @@ location = st.sidebar.selectbox(
      "PraiaDaVittoria", "Saint-Guenole", "Plaisance", "Limnos", "Chios", "Heraklion", "Corfu", "Palaiochora" ],
     key="location"
 )
-# Update: Added "March" to prediction month options, now including "April"
+# Update: Added "March" to prediction month options, now including "April" and "May"
 pred_month = st.sidebar.selectbox(
     "Select Prediction Month",
-    ["January", "February", "March", "April"],
+    ["January", "February", "March", "April", "May"],
     index=1,
     key="pred_month"
 )
@@ -43,6 +44,8 @@ elif pred_month == "March":
     month_code = "202503"
 elif pred_month == "April":
     month_code = "202504"
+elif pred_month == "May":
+    month_code = "202505"
 
 # NEW: Display selected harbor plot in the sidebar using use_container_width
 harbor_plot = f"/home/ubuntu/data/ML/results/OCEANIDS/{location}/{location}_training-locs.png"
@@ -62,12 +65,16 @@ elif pred_month == "March":
     month_code = "202503"
 elif pred_month == "April":
     month_code = "202504"
+elif pred_month == "May":
+    month_code = "202505"
 
 forecast_map = {
     "Wind Gust Max": "WG_PT24H_MAX",
     "Max Temperature": "TA_PT24H_MAX",
     "Min Temperature": "TA_PT24H_MIN",
-    "Total Precipitation": "TP_PT24H_ACC"
+    "Total Precipitation": "TP_PT24H_ACC",
+    "Wind Speed Average": "WS_PT24H_AVG",     # new mapping
+    "Relative Humidity": "RH_PT24H_AVG"       # new mapping
 }
 forecast_prefix = forecast_map[forecast_type]
 
@@ -126,6 +133,16 @@ with col1:
         slider_params = {"min_value": 0, "max_value": 100, "value": 50, "step": 1}
         calc_operator = "above"
         unit_text = "mm"
+    elif forecast_type == "Wind Speed Average":            # new case
+        threshold_text = "Wind Speed Threshold (m/s)"
+        slider_params = {"min_value": 0, "max_value": 30, "value": 10, "step": 1}
+        calc_operator = "above"
+        unit_text = "m/s"
+    elif forecast_type == "Relative Humidity":             # new case
+        threshold_text = "Relative Humidity Threshold (%)"
+        slider_params = {"min_value": 0, "max_value": 100, "value": 50, "step": 1}
+        calc_operator = "above"
+        unit_text = "%"
     
     st.write("Threshold Analysis:")
     threshold = st.slider(threshold_text, **slider_params)
@@ -256,28 +273,44 @@ if has_observations and forecast_type == "Total Precipitation":
 # Statistical Analysis
 st.subheader("Statistical Analysis of Seasonal and Historical Data")
 
-# Create single distribution plot
+# Prepare forecast data for distribution plot
+plot_data = data.copy()
+if forecast_type in ["Max Temperature", "Min Temperature"]:
+    for col in forecast_columns:
+        # convert K→°C and mask unrealistic (< -100°C) as NaN
+        c = plot_data[col] - 273.15
+        plot_data[col] = c.where(c > -100)
+
 fig, ax = plt.subplots(figsize=(10, 6))
 
-# Plot ensemble forecasts 
+# Plot ensemble forecasts, dropping NaNs
 for col in forecast_columns:
+    series = plot_data[col].dropna()
     member_number = int(col.split('_')[-1])
+    if series.empty:
+        continue
     if member_number == 0:
-        color = 'black'
-        sns.kdeplot(data=data, x=col, label='Control', linewidth=1.5, color=color, ax=ax)
+        sns.kdeplot(x=series, label='Control', linewidth=1.5, color='black', ax=ax)
     else:
-        color = 'gray'
-        sns.kdeplot(data=data, x=col, linewidth=0.5, alpha=0.3, color=color, ax=ax)
+        sns.kdeplot(x=series, linewidth=0.5, alpha=0.3, color='gray', ax=ax)
 
 # Add historical observations distribution if available
 if has_observations:
-    if train_data[forecast_prefix].dropna().empty:
-        st.write("Training data forecast column has only missing values. Distribution cannot be plotted.")
+    if forecast_type in ["Max Temperature", "Min Temperature"]:
+        hist = (train_data[forecast_prefix] - 273.15).where(lambda x: x > -100).dropna()
+        if not hist.empty:
+            sns.kdeplot(x=hist, label='Historical Observations', color='red',
+                        linestyle='--', linewidth=2, ax=ax)
+        else:
+            st.write("Training data forecast column has only missing/invalid values.")
     else:
-        sns.kdeplot(data=train_data, x=forecast_prefix, label='Historical Observations', 
-                    color='red', linestyle='--', linewidth=2, ax=ax)
-        
-    # NEW: Plot training grid-point distributions from the training_data file.
+        hist = train_data[forecast_prefix].dropna()
+        if not hist.empty:
+            sns.kdeplot(x=hist, label='Historical Observations', color='red',
+                        linestyle='--', linewidth=2, ax=ax)
+        else:
+            st.write("Training data forecast column has only missing values.")
+    # Plot training grid-point distributions from the training_data file.
     if forecast_type == "Wind Gust Max":
         training_prefix = "fg10-"
     elif forecast_type == "Max Temperature":
@@ -286,18 +319,24 @@ if has_observations:
         training_prefix = "mn2t-"
     elif forecast_type == "Total Precipitation":
         training_prefix = "tp-"
+    elif forecast_type == "Wind Speed Average":           # new mapping
+        training_prefix = "ws-"
+    elif forecast_type == "Relative Humidity":            # new mapping
+        training_prefix = "rh-"
     training_cols = [f"{training_prefix}{i}" for i in range(1,5)]
     for col in training_cols:
-        if col in train_data.columns:
-            sns.kdeplot(data=train_data, x=col, label=f'Training {col}', linestyle=':', linewidth=1.5, ax=ax)
+        series = train_data[col].dropna()
+        if series.empty:
+            continue
+        sns.kdeplot(x=series, label=f'Training {col}', linestyle=':', linewidth=1.5, ax=ax)
 
-ax.set_xlabel(f"{forecast_type} Forecast")
-ax.set_ylabel('Density')
-if forecast_type == "Wind Gust Max":
+if forecast_type in ["Wind Gust Max", "Wind Speed Average"]:  # include average wind speed
     ax.set_title('Distribution of Ensemble Members vs Historical Observations' if has_observations else 'Distribution of Ensemble Members')
     ax.set_xlim(0, 30)
 else:
     ax.set_title(f'Distribution of Ensemble {forecast_type} Forecasts' + (' vs Historical Observations' if has_observations else ''))
+ax.set_xlabel(f"{forecast_type} Forecast")
+ax.set_ylabel('Density')
 ax.legend()
 
 plt.tight_layout()

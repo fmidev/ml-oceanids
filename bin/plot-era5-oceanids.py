@@ -22,7 +22,7 @@ if not os.path.exists(res_dir):
 
 res_file=f'{harbor_name}_training-locs.png'
 data_dir=f'/home/ubuntu/data/ML/training-data/OCEANIDS/{harbor_name}/'
-fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv'
+fname=f'training_data_oceanids_{harbor_name}-sf-addpreds.csv.gz'
 cols=['latitude','longitude','lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4']
 df=pd.read_csv(data_dir+fname,usecols=cols)
 

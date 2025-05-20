@@ -1,26 +1,41 @@
-python calculate-metrics.py cordex-cnrm_cerfacs_cm5-cnrm_aladin63-Raahe-TX_PT24H_MAX-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-cnrm_cerfacs_cm5-cnrm_aladin63-Raahe-WG_PT24H_MAX-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-cnrm_cerfacs_cm5-knmi_racmo22e-Raahe-TN_PT24H_MIN-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-cnrm_cerfacs_cm5-knmi_racmo22e-Raahe-TP_PT24H_SUM-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-cnrm_cerfacs_cm5-knmi_racmo22e-Raahe-TX_PT24H_MAX-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-cnrm_cerfacs_cm5-knmi_racmo22e-Raahe-WG_PT24H_MAX-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-dmi_hirham5-Raahe-TN_PT24H_MIN-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-dmi_hirham5-Raahe-TP_PT24H_SUM-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-dmi_hirham5-Raahe-TX_PT24H_MAX-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-dmi_hirham5-Raahe-WG_PT24H_MAX-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-knmi_racmo22e-Raahe-TN_PT24H_MIN-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-knmi_racmo22e-Raahe-TP_PT24H_SUM-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-knmi_racmo22e-Raahe-TX_PT24H_MAX-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-knmi_racmo22e-Raahe-WG_PT24H_MAX-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-smhi_rca4-Raahe-TN_PT24H_MIN-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-smhi_rca4-Raahe-TP_PT24H_SUM-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-smhi_rca4-Raahe-TX_PT24H_MAX-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-mohc_hadgem2_es-smhi_rca4-Raahe-WG_PT24H_MAX-quantileerror-predictions-2006-2099.csv
-python calculate-metrics.py cordex-ncc_noresm1_m-dmi_hirham5-Raahe-TN_PT24H_MIN-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-ncc_noresm1_m-dmi_hirham5-Raahe-TP_PT24H_SUM-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-ncc_noresm1_m-dmi_hirham5-Raahe-TX_PT24H_MAX-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-ncc_noresm1_m-dmi_hirham5-Raahe-WG_PT24H_MAX-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-ncc_noresm1_m-smhi_rca4-Raahe-TN_PT24H_MIN-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-ncc_noresm1_m-smhi_rca4-Raahe-TP_PT24H_SUM-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-ncc_noresm1_m-smhi_rca4-Raahe-TX_PT24H_MAX-quantileerror-predictions-2006-2100.csv
-python calculate-metrics.py cordex-ncc_noresm1_m-smhi_rca4-Raahe-WG_PT24H_MAX-quantileerror-predictions-2006-2100.csv
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MAX cnrm_cerfacs_cm5-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MAX mohc_hadgem2_es-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MAX mohc_hadgem2_es-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MAX mohc_hadgem2_es-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MAX ncc_noresm1_m-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MAX ncc_noresm1_m-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MIN cnrm_cerfacs_cm5-cnrm_aladin63
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MIN cnrm_cerfacs_cm5-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MIN mohc_hadgem2_es-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MIN mohc_hadgem2_es-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MIN mohc_hadgem2_es-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MIN ncc_noresm1_m-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos TA_PT24H_MIN ncc_noresm1_m-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos TP_PT24H_ACC cnrm_cerfacs_cm5-cnrm_aladin63
+./fit-cordex-oceanids.sh rcp45 Limnos TP_PT24H_ACC cnrm_cerfacs_cm5-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos TP_PT24H_ACC mohc_hadgem2_es-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos TP_PT24H_ACC mohc_hadgem2_es-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos TP_PT24H_ACC mohc_hadgem2_es-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos TP_PT24H_ACC ncc_noresm1_m-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos TP_PT24H_ACC ncc_noresm1_m-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos RH_PT24H_AVG cnrm_cerfacs_cm5-cnrm_aladin63
+./fit-cordex-oceanids.sh rcp45 Limnos RH_PT24H_AVG cnrm_cerfacs_cm5-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos RH_PT24H_AVG mohc_hadgem2_es-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos RH_PT24H_AVG mohc_hadgem2_es-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos RH_PT24H_AVG mohc_hadgem2_es-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos RH_PT24H_AVG ncc_noresm1_m-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos RH_PT24H_AVG ncc_noresm1_m-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos WG_PT24H_MAX cnrm_cerfacs_cm5-cnrm_aladin63
+./fit-cordex-oceanids.sh rcp45 Limnos WG_PT24H_MAX cnrm_cerfacs_cm5-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos WG_PT24H_MAX mohc_hadgem2_es-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos WG_PT24H_MAX mohc_hadgem2_es-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos WG_PT24H_MAX mohc_hadgem2_es-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos WG_PT24H_MAX ncc_noresm1_m-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos WG_PT24H_MAX ncc_noresm1_m-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos WS_PT24H_AVG cnrm_cerfacs_cm5-cnrm_aladin63
+./fit-cordex-oceanids.sh rcp45 Limnos WS_PT24H_AVG cnrm_cerfacs_cm5-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos WS_PT24H_AVG mohc_hadgem2_es-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos WS_PT24H_AVG mohc_hadgem2_es-knmi_racmo22e
+./fit-cordex-oceanids.sh rcp45 Limnos WS_PT24H_AVG mohc_hadgem2_es-smhi_rca4
+./fit-cordex-oceanids.sh rcp45 Limnos WS_PT24H_AVG ncc_noresm1_m-dmi_hirham5
+./fit-cordex-oceanids.sh rcp45 Limnos WS_PT24H_AVG ncc_noresm1_m-smhi_rca4
