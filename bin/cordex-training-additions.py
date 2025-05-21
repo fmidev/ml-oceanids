@@ -42,7 +42,8 @@ correlation_mappings = {
     'TA_PT24H_MIN': 'tasmin',
     'TA_PT24H_MAX': 'tasmax',
     'TP_PT24H_ACC': 'pr',
-    'RH_PT24H_AVG': 'hurs'
+    'RH_PT24H_AVG': 'hurs',
+    'WS_PT24H_AVG': 'sfcWind'
 }
 
 # Convert 'utctime' to datetime and extract year and month
