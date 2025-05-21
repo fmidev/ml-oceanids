@@ -20,12 +20,17 @@ def extract_lat_lon_columns(df):
     lon_columns = sorted([col for col in df.columns if col.startswith("lon-")])
     return lat_columns, lon_columns
 
-def plot_harbor_points(csv_dir, output_file, loc, harbor_coords=None):
+def plot_harbor_points(sf_dir, cordex_dir, output_file, loc):
     """Plots harbor prediction points from multiple CSVs, grouped by shared grids."""
     with open('harbors_config.json', 'r') as f:
         harbors = json.load(f)
     station_lat = harbors[loc]['latitude']
     station_lon = harbors[loc]['longitude']
+    
+    # Extract harbor coordinates from config if available
+    harbor_coords = None
+    if 'harbor_longitude' in harbors[loc] and 'harbor_latitude' in harbors[loc]:
+        harbor_coords = (harbors[loc]['harbor_longitude'], harbors[loc]['harbor_latitude'])
     
     # Extract start and end years from config
     start_year = harbors[loc]['start'][:4]
@@ -91,12 +96,15 @@ def plot_harbor_points(csv_dir, output_file, loc, harbor_coords=None):
     for grid_name in reversed(list(model_groups.keys())):
         models = model_groups[grid_name]
         try:
+            # Use appropriate directory and pattern based on grid type
             if grid_name == 'sf':
-                pattern = f"{csv_dir}training_data_oceanids_{loc}-sf_*-WG_PT24H_MAX.csv"
+                pattern = f"{sf_dir}training_data_oceanids_{loc}-sf.csv.gz"
+                data_dir = sf_dir
             else:
-                pattern = f"{csv_dir}training_data_oceanids_{models[0]}_{loc}_WG_PT24H_MAX*.csv"
+                pattern = f"{cordex_dir}training_data_oceanids_{loc}_cordex_rcp45_{models[0]}*.csv"
+                data_dir = cordex_dir
             
-            # Add debug print for troubleshooting SF grid
+            # Add debug print for troubleshooting
             print(f"Looking for file: {pattern}")
             
             matching_files = glob.glob(pattern)
@@ -117,12 +125,12 @@ def plot_harbor_points(csv_dir, output_file, loc, harbor_coords=None):
                 for i in range(len(lat_cols)):
                     ax.plot(df[lon_cols].values[0], 
                            df[lat_cols[i]].values[0] * np.ones_like(df[lon_cols].values[0]),
-                           color=grid_colors[grid_name], alpha=0.6,  # Increased from 0.4
+                           color=grid_colors[grid_name], alpha=0.6,
                            linestyle=':', linewidth=2, zorder=4,
                            transform=ccrs.PlateCarree())
                     ax.plot(df[lon_cols[i]].values[0] * np.ones_like(df[lat_cols].values[0]), 
                            df[lat_cols].values[0],
-                           color=grid_colors[grid_name], alpha=0.6,  # Increased from 0.4
+                           color=grid_colors[grid_name], alpha=0.6,
                            linestyle=':', linewidth=2, zorder=4,
                            transform=ccrs.PlateCarree())
             else:
@@ -143,7 +151,7 @@ def plot_harbor_points(csv_dir, output_file, loc, harbor_coords=None):
                             ax.plot([points[p1,0], points[p2,0]], 
                                    [points[p1,1], points[p2,1]],
                                    color=grid_colors[grid_name], 
-                                   alpha=0.7,  # Increased from 0.5
+                                   alpha=0.7,
                                    linestyle=':', linewidth=2.5, zorder=4,
                                    transform=ccrs.PlateCarree())
             
@@ -171,8 +179,8 @@ def plot_harbor_points(csv_dir, output_file, loc, harbor_coords=None):
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc='upper left',
              title='Models', frameon=True, framealpha=1,
-             scatterpoints=1, # Use single point for legend
-             markerscale=1.5) # Adjust marker size in legend
+             scatterpoints=1,
+             markerscale=1.5)
     
     plt.title(f"Model grid points for {loc} Harbor")
     plt.savefig(output_file, bbox_inches='tight', dpi=300)
@@ -180,19 +188,15 @@ def plot_harbor_points(csv_dir, output_file, loc, harbor_coords=None):
 
 # Modified example usage:
 if len(sys.argv) < 2:
-    print("Usage: python plot-oceanids-multimodel.py <location> [harbor_lon harbor_lat]")
+    print("Usage: python plot-oceanids-multimodel.py <location>")
     sys.exit(1)
 
 loc = sys.argv[1]
-harbor_coords = None
-if len(sys.argv) == 4:
-    try:
-        harbor_coords = (float(sys.argv[2]), float(sys.argv[3]))
-    except ValueError:
-        print("Error: Harbor coordinates must be valid numbers")
-        sys.exit(1)
 
-csv_directory = "/home/ubuntu/data/ML/training-data/OCEANIDS/"
-output_file = f"../{loc}_points.png"
+# Updated directory paths
+sf_directory = f"/home/ubuntu/data/ML/training-data/OCEANIDS/{loc}/"
+cordex_directory = f"/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/"
+output_file = f"home/ubuntu/data/ML/results/OCEANIDS/plots/{loc}_points.png"
 
-plot_harbor_points(csv_directory, output_file, loc, harbor_coords)
+# Pass both directories to the function
+plot_harbor_points(sf_directory, cordex_directory, output_file, loc)
