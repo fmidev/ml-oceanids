@@ -5,9 +5,6 @@ import numpy as np
 import glob
 import os
 
-#remove Helsinki from file names for other locations
-
-
 def calculate_wind_speed(u, v):
     """Calculate wind speed from u and v components."""
     return np.sqrt(u**2 + v**2)
