@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import sys
 
 file_path = sys.argv[1]
-pred = file_path.split('-')[-5]
+pred = sys.argv[2]
 print(pred)
 
 # Read the CSV file
