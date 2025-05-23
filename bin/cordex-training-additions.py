@@ -1,39 +1,35 @@
 import pandas as pd
 import numpy as np
 import sys
+import json
+import os
+from datetime import datetime
 
-# Function to process the variable group based on the pred
-def process_variable_group(df, pred, include_pred_stats=True):
-    variable_prefix = None
-    for key, value in correlation_mappings.items():
-        if pred in key:
-            variable_prefix = value
-            break
+# Load harbor config file with proper path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, 'harbors_config.json')
+with open(config_path, 'r') as file:
+    config = json.load(file)
 
-    df = df.copy()
-    df[f'{variable_prefix}_sum'] = df[[f'{variable_prefix}-1', f'{variable_prefix}-2', f'{variable_prefix}-3', f'{variable_prefix}-4']].sum(axis=1) / 4
-
-    agg_dict = {f'{variable_prefix}_sum': ['mean', 'min', 'max']}
-    if include_pred_stats:
-        agg_dict[f'{pred}'] = ['mean', 'min', 'max']
-    
-    monthly_stats = df.groupby(['year', 'month']).agg(agg_dict)
-    monthly_stats.columns = ['_'.join(col).strip() for col in monthly_stats.columns.values]
-    monthly_stats.reset_index(inplace=True)
-
-    monthly_stats[f'{variable_prefix}_{pred}_diff_mean'] = monthly_stats[f'{variable_prefix}_sum_mean'] - monthly_stats.get(f'{pred}_mean', 0)
-    monthly_stats[f'{variable_prefix}_{pred}_diff_min'] = monthly_stats[f'{variable_prefix}_sum_min'] - monthly_stats.get(f'{pred}_min', 0)
-    monthly_stats[f'{variable_prefix}_{pred}_diff_max'] = monthly_stats[f'{variable_prefix}_sum_max'] - monthly_stats.get(f'{pred}_max', 0)
-
-    df = df.merge(monthly_stats, on=['year', 'month'], how='left')
-    return df
-
-# Read the CSV file into a DataFrame
-start_date = '2013-07-01'
-obs_date = '2025-01-01'
+# Read command line arguments
 scenario = sys.argv[1]
 loc = sys.argv[2]
 model = sys.argv[3]
+
+# Get location-specific dates from config
+if loc in config:
+    # Convert date format YYYYMMDDTHHMMSSZ to YYYY-MM-DD
+    start_str = config[loc]['start']
+    end_str = config[loc]['end']
+    start_date = datetime.strptime(start_str, "%Y%m%dT%H%M%SZ").strftime("%Y-%m-%d")
+    obs_date = datetime.strptime(end_str, "%Y%m%dT%H%M%SZ").strftime("%Y-%m-%d")
+    print(f"Using location-specific dates for {loc}: Start={start_date}, End={obs_date}")
+else:
+    print(f"Warning: Location {loc} not found in config. Using default dates.")
+    start_date = '2000-01-01'
+    obs_date = '2025-01-01'
+
+# Read the CSV file into a DataFrame
 df = pd.read_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/cordex_{scenario}_{model}_{loc}.csv')
 
 # Define the correlation mappings
@@ -54,96 +50,50 @@ df['month'] = df['utctime'].dt.month
 # Initialize output DataFrames with the original input data
 all_training_data = df[df['utctime'] <= obs_date].copy()
 all_training_data = all_training_data[all_training_data['utctime'] >= start_date].copy()
-# Modified to start prediction data from same date as training data
 all_prediction_data = df[df['utctime'] >= start_date].copy()
 
 # Loop through each predictor in correlation_mappings
 for pred in correlation_mappings.keys():
-    # Calculate monthly statistics for the chosen pred up to set date
-    monthly_stats = df[df['utctime'] <= obs_date].groupby('month')[pred].agg(['mean', 'min', 'max'])
-
     # Process data for the current predictor
     variable_prefix = correlation_mappings[pred]
     
-    # Calculate sum for the current variable
+    # Calculate sum for the current variable (average of the 4 models)
     sum_col = f'{variable_prefix}_sum'
     all_training_data[sum_col] = all_training_data[[f'{variable_prefix}-1', f'{variable_prefix}-2', 
                                                  f'{variable_prefix}-3', f'{variable_prefix}-4']].sum(axis=1) / 4
     all_prediction_data[sum_col] = all_prediction_data[[f'{variable_prefix}-1', f'{variable_prefix}-2', 
                                                      f'{variable_prefix}-3', f'{variable_prefix}-4']].sum(axis=1) / 4
     
-    # Calculate monthly aggregates for the current variable using historical data
-    agg_dict = {sum_col: ['mean', 'min', 'max'], pred: ['mean', 'min', 'max']}
-    monthly_aggs = all_training_data.groupby(['year', 'month']).agg(agg_dict)
-    monthly_aggs.columns = ['_'.join(col).strip() for col in monthly_aggs.columns.values]
-    monthly_aggs.reset_index(inplace=True)
+    # Calculate monthly aggregates - using extreme values
+    agg_dict = {
+        sum_col: ['mean', lambda x: x.min(), lambda x: x.max()], 
+        pred: ['mean', lambda x: x.min(), lambda x: x.max()]
+    }
+    monthly_stats = all_training_data.groupby('month').agg(agg_dict)
+    
+    # Rename the columns properly
+    monthly_stats.columns = [
+        f'{col[0]}_{"mean" if col[1] == "mean" else "min" if "<lambda_0>" in str(col[1]) else "max"}' 
+        for col in monthly_stats.columns
+    ]
+    monthly_stats.reset_index(inplace=True)
     
     # Calculate difference columns
-    monthly_aggs[f'{variable_prefix}_{pred}_diff_mean'] = monthly_aggs[f'{sum_col}_mean'] - monthly_aggs[f'{pred}_mean']
-    monthly_aggs[f'{variable_prefix}_{pred}_diff_min'] = monthly_aggs[f'{sum_col}_min'] - monthly_aggs[f'{pred}_min']
-    monthly_aggs[f'{variable_prefix}_{pred}_diff_max'] = monthly_aggs[f'{sum_col}_max'] - monthly_aggs[f'{pred}_max']
+    monthly_stats[f'{variable_prefix}_{pred}_diff_mean'] = monthly_stats[f'{sum_col}_mean'] - monthly_stats[f'{pred}_mean']
+    monthly_stats[f'{variable_prefix}_{pred}_diff_min'] = monthly_stats[f'{sum_col}_min'] - monthly_stats[f'{pred}_min']
+    monthly_stats[f'{variable_prefix}_{pred}_diff_max'] = monthly_stats[f'{sum_col}_max'] - monthly_stats[f'{pred}_max']
     
-    # Create another aggregation by month only (not by year) for future data filling
-    monthly_only_aggs = monthly_aggs.groupby('month').mean().reset_index()
-    
-    # Add aggregated columns to both datasets
+    # Define columns to be added to both datasets
     new_columns = [f'{sum_col}_mean', f'{sum_col}_min', f'{sum_col}_max',
                   f'{pred}_mean', f'{pred}_min', f'{pred}_max',
                   f'{variable_prefix}_{pred}_diff_mean', f'{variable_prefix}_{pred}_diff_min', f'{variable_prefix}_{pred}_diff_max']
     
-    all_training_data = all_training_data.merge(monthly_aggs[['year', 'month'] + new_columns], 
-                                             on=['year', 'month'], how='left')
+    # Apply the monthly stats to both training and prediction data by month
+    all_training_data = all_training_data.merge(monthly_stats[['month'] + new_columns], 
+                                            on=['month'], how='left')
     
-    # For prediction data, we need special handling for future dates
-    # First merge historical dates normally
-    past_prediction = all_prediction_data[all_prediction_data['utctime'] <= obs_date].copy()
-    past_prediction = past_prediction.merge(monthly_aggs[['year', 'month'] + new_columns], 
-                                         on=['year', 'month'], how='left')
-    
-    # For future dates, use the monthly averages (not specific to year)
-    future_prediction = all_prediction_data[all_prediction_data['utctime'] > obs_date].copy()
-    
-    # Merge the monthly stats for future data
-    for month in range(1, 13):
-        month_mask = future_prediction['month'] == month
-        if month in monthly_stats.index:
-            # Fill predictor statistics
-            future_prediction.loc[month_mask, f'{pred}_mean'] = monthly_stats.loc[month, 'mean']
-            future_prediction.loc[month_mask, f'{pred}_min'] = monthly_stats.loc[month, 'min'] 
-            future_prediction.loc[month_mask, f'{pred}_max'] = monthly_stats.loc[month, 'max']
-            
-            # Fill sum statistics using monthly averages
-            month_data = monthly_only_aggs[monthly_only_aggs['month'] == month]
-            if not month_data.empty:
-                future_prediction.loc[month_mask, f'{sum_col}_mean'] = month_data[f'{sum_col}_mean'].values[0]
-                future_prediction.loc[month_mask, f'{sum_col}_min'] = month_data[f'{sum_col}_min'].values[0]
-                future_prediction.loc[month_mask, f'{sum_col}_max'] = month_data[f'{sum_col}_max'].values[0]
-                
-                # Fill difference columns
-                future_prediction.loc[month_mask, f'{variable_prefix}_{pred}_diff_mean'] = month_data[f'{variable_prefix}_{pred}_diff_mean'].values[0]
-                future_prediction.loc[month_mask, f'{variable_prefix}_{pred}_diff_min'] = month_data[f'{variable_prefix}_{pred}_diff_min'].values[0]
-                future_prediction.loc[month_mask, f'{variable_prefix}_{pred}_diff_max'] = month_data[f'{variable_prefix}_{pred}_diff_max'].values[0]
-    
-    # Combine past and future prediction data
-    all_prediction_data = pd.concat([past_prediction, future_prediction], ignore_index=True)
-    
-    # Adjust future values using differences
-    future_mask = all_prediction_data['utctime'] > obs_date
-    for month in range(1, 13):
-        month_mask = all_prediction_data['month'] == month
-        future_month_mask = future_mask & month_mask
-        
-        # Get average differences from historical data for this month
-        past_month_mask = (~future_mask) & month_mask
-        diff_mean_past = all_prediction_data.loc[past_month_mask, f'{variable_prefix}_{pred}_diff_mean'].mean()
-        
-        # Apply adjustments to future data
-        if month in monthly_stats.index:
-            mean_stat = monthly_stats.loc[month, 'mean']
-            diff_means = all_prediction_data.loc[future_month_mask, f'{variable_prefix}_{pred}_diff_mean']
-            
-            # Adjust the actual predictor value
-            all_prediction_data.loc[future_month_mask, pred] = mean_stat + diff_means - diff_mean_past
+    all_prediction_data = all_prediction_data.merge(monthly_stats[['month'] + new_columns],
+                                                on=['month'], how='left')
     
     print(f'Processed {pred} data')
 
