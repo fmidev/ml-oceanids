@@ -1,7 +1,7 @@
 fmi-apikey
 *DEV*
 data
-optuna-commands.txt
+bin/optuna-commands.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
