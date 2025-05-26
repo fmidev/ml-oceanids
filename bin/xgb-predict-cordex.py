@@ -11,7 +11,7 @@ startTime = time.time()
 
 # Get command line arguments
 if len(sys.argv) < 3:
-    print("Usage: python xgb-predict-cordex.py <harbor_name> <pred> [model_name]")
+    print("Usage: python xgb-predict-cordex.py <scenario> <harbor_name> <pred> <model_name>")
     sys.exit(1)
 
 scenario= sys.argv[1]
