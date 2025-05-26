@@ -48,58 +48,58 @@ df['year'] = df['utctime'].dt.year
 df['month'] = df['utctime'].dt.month
 
 # Initialize output DataFrames with the original input data
-all_training_data = df[df['utctime'] <= obs_date].copy()
-all_training_data = all_training_data[all_training_data['utctime'] >= start_date].copy()
-all_prediction_data = df[df['utctime'] >= start_date].copy()
+training_data = df[df['utctime'] <= obs_date].copy()
+training_data = training_data[training_data['utctime'] >= start_date].copy()
+prediction_data = df[df['utctime'] >= start_date].copy()
 
 # Loop through each predictor in correlation_mappings
 for pred in correlation_mappings.keys():
     # Process data for the current predictor
-    variable_prefix = correlation_mappings[pred]
+    variable = correlation_mappings[pred]
     
     # Calculate sum for the current variable (average of the 4 models)
-    sum_col = f'{variable_prefix}_sum'
-    all_training_data[sum_col] = all_training_data[[f'{variable_prefix}-1', f'{variable_prefix}-2', 
-                                                 f'{variable_prefix}-3', f'{variable_prefix}-4']].sum(axis=1) / 4
-    all_prediction_data[sum_col] = all_prediction_data[[f'{variable_prefix}-1', f'{variable_prefix}-2', 
-                                                     f'{variable_prefix}-3', f'{variable_prefix}-4']].sum(axis=1) / 4
+    sum_col = f'{variable}_sum'
+    training_data[sum_col] = training_data[[f'{variable}-1', f'{variable}-2', 
+                                                 f'{variable}-3', f'{variable}-4']].sum(axis=1) / 4
+    prediction_data[sum_col] = prediction_data[[f'{variable}-1', f'{variable}-2', 
+                                                     f'{variable}-3', f'{variable}-4']].sum(axis=1) / 4
     
-    # Calculate monthly aggregates - using extreme values
-    agg_dict = {
-        sum_col: ['mean', lambda x: x.min(), lambda x: x.max()], 
-        pred: ['mean', lambda x: x.min(), lambda x: x.max()]
-    }
-    monthly_stats = all_training_data.groupby('month').agg(agg_dict)
+    # Calculate year-month aggregates for variables using ALL prediction data
+    # This ensures we have stats for the entire prediction period
+    variable_stats = prediction_data.groupby(['year', 'month'])[sum_col].agg(['mean', 'min', 'max'])
+    variable_stats.columns = [f'{sum_col}_{col}' for col in variable_stats.columns]
+    variable_stats.reset_index(inplace=True)
     
-    # Rename the columns properly
-    monthly_stats.columns = [
-        f'{col[0]}_{"mean" if col[1] == "mean" else "min" if "<lambda_0>" in str(col[1]) else "max"}' 
-        for col in monthly_stats.columns
-    ]
-    monthly_stats.reset_index(inplace=True)
+    # Calculate month-only aggregates for preds (still using only training data)
+    pred_stats = training_data.groupby('month')[pred].agg(['mean', 'min', 'max'])
+    pred_stats.columns = [f'{pred}_{col}' for col in pred_stats.columns]
+    pred_stats.reset_index(inplace=True)
+    
+    # Merge the two stats dataframes to calculate differences
+    monthly_stats = variable_stats.merge(pred_stats, on='month', how='left')
     
     # Calculate difference columns
-    monthly_stats[f'{variable_prefix}_{pred}_diff_mean'] = monthly_stats[f'{sum_col}_mean'] - monthly_stats[f'{pred}_mean']
-    monthly_stats[f'{variable_prefix}_{pred}_diff_min'] = monthly_stats[f'{sum_col}_min'] - monthly_stats[f'{pred}_min']
-    monthly_stats[f'{variable_prefix}_{pred}_diff_max'] = monthly_stats[f'{sum_col}_max'] - monthly_stats[f'{pred}_max']
+    monthly_stats[f'{variable}_{pred}_diff_mean'] = monthly_stats[f'{sum_col}_mean'] - monthly_stats[f'{pred}_mean']
+    monthly_stats[f'{variable}_{pred}_diff_min'] = monthly_stats[f'{sum_col}_min'] - monthly_stats[f'{pred}_min']
+    monthly_stats[f'{variable}_{pred}_diff_max'] = monthly_stats[f'{sum_col}_max'] - monthly_stats[f'{pred}_max']
     
     # Define columns to be added to both datasets
     new_columns = [f'{sum_col}_mean', f'{sum_col}_min', f'{sum_col}_max',
                   f'{pred}_mean', f'{pred}_min', f'{pred}_max',
-                  f'{variable_prefix}_{pred}_diff_mean', f'{variable_prefix}_{pred}_diff_min', f'{variable_prefix}_{pred}_diff_max']
+                  f'{variable}_{pred}_diff_mean', f'{variable}_{pred}_diff_min', f'{variable}_{pred}_diff_max']
     
-    # Apply the monthly stats to both training and prediction data by month
-    all_training_data = all_training_data.merge(monthly_stats[['month'] + new_columns], 
-                                            on=['month'], how='left')
+    # Apply the year-month stats to both training and prediction data
+    training_data = training_data.merge(monthly_stats[['year', 'month'] + new_columns], 
+                                            on=['year', 'month'], how='left')
     
-    all_prediction_data = all_prediction_data.merge(monthly_stats[['month'] + new_columns],
-                                                on=['month'], how='left')
+    prediction_data = prediction_data.merge(monthly_stats[['year', 'month'] + new_columns],
+                                                on=['year', 'month'], how='left')
     
     print(f'Processed {pred} data')
 
 # Save the combined DataFrames to CSV files
-all_training_data.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/training_data_oceanids_{loc}_cordex_{scenario}_{model}.csv', index=False)
+training_data.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/training_data_oceanids_{loc}_cordex_{scenario}_{model}.csv', index=False)
 print(f'Combined training data saved for {scenario}_{model}_{loc}')
 
-all_prediction_data.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/prediction_data_oceanids_{loc}_cordex_{scenario}_{model}.csv', index=False)
+prediction_data.to_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/cordex/{loc}/prediction_data_oceanids_{loc}_cordex_{scenario}_{model}.csv', index=False)
 print(f'Combined prediction data saved for {scenario}_{model}_{loc}')
