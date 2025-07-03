@@ -25,7 +25,7 @@ daily_pra_sum = df2['PRA_PT12H_ACC'].resample('D').sum(min_count=1)
 
 # Combine the daily values into a single DataFrame
 daily_df = pd.concat([daily_ta_max, daily_ta_min, daily_pra_sum, daily_wg_max], axis=1)
-daily_df.columns = ['TX_PT24H_MAX', 'TN_PT24H_MIN', 'TP_PT24H_SUM', 'WG_PT24H_MAX']
+daily_df.columns = ['TX_PT24H_MAX', 'TN_PT24H_MIN', 'TP_PT24H_ACC', 'WG_PT24H_MAX']
 
 # Reset the index to include the 'time' column
 daily_df = daily_df.reset_index()
