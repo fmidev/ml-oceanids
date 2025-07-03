@@ -57,8 +57,6 @@ for col in columns:
 # Read training data using the filtered columns
 df = pd.read_csv(data_dir + train_fname, usecols=filtered_columns)
 df = df.dropna(axis=1, how='all')
-df = df.dropna(axis=0, how='any')
-df['utctime'] = pd.to_datetime(df['utctime'])
 
 # Print CSV headers to debug
 print("CSV columns:", df.columns.tolist())
@@ -71,12 +69,25 @@ X = df[preds_headers]
 model = xgb.XGBRegressor()
 model.load_model(f'{mod_dir}{mod_name}')
 
-# Retrieve and print expected features from the model
-required_columns = model.get_booster().feature_names
-print("Model expected features:", required_columns)
+# Retrieve expected features from the model
+model_features = model.get_booster().feature_names
+print("Model expected features:", model_features)
 
-# (Optional) Ensure that X has the correct columns (subset/reorder if necessary)
-X = X[required_columns]
+# Ensure X only contains features that were in the training data
+missing_features = [col for col in X.columns if col not in model_features]
+if missing_features:
+    print(f"Removing features that weren't in training data: {missing_features}")
+    X = X[[col for col in X.columns if col in model_features]]
+
+# Add any missing features from training data with zeros
+missing_from_X = [col for col in model_features if col not in X.columns]
+if missing_from_X:
+    print(f"Adding missing features to data: {missing_from_X}")
+    for col in missing_from_X:
+        X[col] = 0
+
+# Ensure column order matches exactly what the model expects
+X = X[model_features]
 
 # Make predictions
 predictions = model.predict(X)
